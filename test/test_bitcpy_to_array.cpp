@@ -202,11 +202,11 @@ static void test_to_array_signed()
         auto &buffer_as_unsigned = *reinterpret_cast<unsigned_buff_type *>(&buffer);
 
         buffer[0] = 85;
-        serdes::detail::extend_sign(buffer[0], 2);
+        serdes::detail::extend_sign<int16_t>(buffer[0], 2);
         test_cmp_arrays<uint16_t>(buffer_as_unsigned, {1_u16});
 
         buffer[0] = 85;
-        serdes::detail::extend_sign(buffer[0], 3);
+        serdes::detail::extend_sign<int16_t>(buffer[0], 3);
         test_cmp_arrays<uint16_t>(buffer_as_unsigned, {65533_u16});
 
         buffer[0] = 85;

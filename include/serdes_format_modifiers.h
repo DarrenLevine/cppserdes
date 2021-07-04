@@ -95,7 +95,7 @@ namespace serdes
         /// @param    v: reference to the underlying array
         /// @param    s: reference to a value representing the dynamic array size
         template <size_t max_elements>
-        array(T (&v)[max_elements], ST &s) noexcept : value{&v[0]}, size{s}, max_size{max_elements} {}
+        array(T (&v)[max_elements], const ST &s) noexcept : value{&v[0]}, size{s}, max_size{max_elements} {}
 
         /// @brief Construct a new array object from an existing array and a rvalue size
         /// @tparam   max_elements

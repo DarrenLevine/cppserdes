@@ -10,7 +10,8 @@ The following are the valid targets for this Makefile:               \n \
 ... docs      : generates doxygen documentation and opens it         \n \
 ... clean     : removes build, doc, and gcov files                   \n \
 ... test_gcov : runs test with coverage reports                      \n \
-... msys32    : runs the tests with 32bit mingw if installed         \n"
+... msys32    : runs the tests with 32bit mingw if installed         \n" \
+... clang     : runs the tests with clang if installed               \n"
 endef
 help:
 	@echo -e $(help_page)
@@ -27,6 +28,15 @@ LOTS_OF_WARNINGS = \
 	-Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-promo \
 	-Wstrict-null-sentinel -Wswitch-default -Wundef -Wno-unused -Wdouble-promotion -Wstrict-overflow=5 \
 	-Wstrict-aliasing=2 -Wformat=2 -Weffc++
+ifneq ($(MAKECMDGOALS),$(clang))
+CXX := clang++
+LOTS_OF_WARNINGS := \
+	-Werror -Wmissing-format-attribute -Wall -Wextra -pedantic -Wcast-align -Wcast-qual \
+	-Wctor-dtor-privacy -Wdisabled-optimization -Winit-self -Wmissing-declarations \
+	-Wmissing-include-dirs -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-promo \
+	-Wswitch-default -Wundef -Wno-unused -Wdouble-promotion -Wstrict-overflow=5 \
+	-Wstrict-aliasing=2 -Wformat=2 -Weffc++
+endif
 src = test_all.cpp
 srcs = $(src) test_multiple_cpp_files.cpp
 
@@ -51,6 +61,10 @@ msys32: test
 ifneq ($(MAKECMDGOALS),$(msys32))
 export PATH := /c/msys64/mingw32/bin/:$(PATH)
 endif
+
+# runs all unit tests using /c/msys64/mingw32/bin/g++.exe 32bit compiler 
+clang: test
+.PHONY: clang
 
 # runs all unit tests and generates gcov coverage reports
 test_gcov:

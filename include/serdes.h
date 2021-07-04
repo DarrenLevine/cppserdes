@@ -140,7 +140,9 @@ namespace serdes
         template <typename T, size_t N>
         void load(T (&value)[N], size_t bits = detail::default_bitsize<T>::value)
         {
-            load(array<T, size_t>(value, N), bits);
+            constexpr size_t size = N;
+            array<T, size_t> temp_arr(value, size);
+            load(temp_arr, bits);
         }
 
         /// @brief [[deserialize]] loads from serial buffer into the passed value reference
@@ -252,9 +254,8 @@ namespace serdes
         /// @brief [[deserialize]] loads from serial buffer into a delimited_array<packet_base> reference
         /// @tparam   T: underlying type of the delimited_array
         /// @param    value: referenced delimited_array
-        /// @param    bits: number of bits per element
         template <typename T, typename std::enable_if<std::is_base_of<packet_base, T>::value, int *>::type = nullptr>
-        void load(delimited_array<T> &value, size_t bits = detail::default_bitsize<T>::value)
+        void load(delimited_array<T> &value)
         {
             if (status != status_e::NO_ERROR)
                 return;
@@ -271,11 +272,10 @@ namespace serdes
         /// @brief [[deserialize]] loads from serial buffer into a delimited_array<T> reference
         /// @tparam   T: underlying type of the delimited_array
         /// @param    value: referenced delimited_array
-        /// @param    bits: number of bits per element
         template <typename T>
-        void load(delimited_array<T> &&value, size_t bits = detail::default_bitsize<T>::value)
+        void load(delimited_array<T> &&value)
         {
-            load(value, bits);
+            load(value);
         }
 
         /// @brief [[deserialize]] loads from serial buffer into a array<T1, T2> reference
@@ -319,9 +319,8 @@ namespace serdes
         /// @tparam   T: underlying type of the array (must be derived from packet_base)
         /// @tparam   T2: underlying size type of the array
         /// @param    value: referenced array
-        /// @param    bits: number of bits per element
         template <typename T, typename T2, typename std::enable_if<std::is_base_of<packet_base, T>::value, int *>::type = nullptr>
-        void load(array<T, T2> &value, size_t bits = detail::default_bitsize<T>::value)
+        void load(array<T, T2> &value)
         {
             if (status != status_e::NO_ERROR)
                 return;
@@ -344,11 +343,10 @@ namespace serdes
         /// @tparam   T: underlying type of the array
         /// @tparam   T2: underlying size type of the array
         /// @param    value: referenced array
-        /// @param    bits: number of bits per element
         template <typename T, typename T2>
-        void load(array<T, T2> &&value, size_t bits = detail::default_bitsize<T>::value)
+        void load(array<T, T2> &&value)
         {
-            load(value, bits);
+            load(value);
         }
 
         /// @brief [[deserialize, pad]] applies a padding step to the load process
@@ -505,9 +503,8 @@ namespace serdes
         /// @brief [[serialize]] stores a delimited_array<packet_base> reference into a serial buffer
         /// @tparam   T: delimited_array base type (must be derived from packet_base)
         /// @param    value: value to store
-        /// @param    bits: bits per value element
         template <typename T, typename std::enable_if<std::is_base_of<packet_base, T>::value, int *>::type = nullptr>
-        void store(const delimited_array<T> &value, size_t bits = detail::default_bitsize<T>::value)
+        void store(const delimited_array<T> &value)
         {
             if (status != status_e::NO_ERROR)
                 return;
@@ -524,11 +521,10 @@ namespace serdes
         /// @brief [[serialize]] stores a delimited_array<packet_base> rvalue into a serial buffer
         /// @tparam   T: delimited_array base type (must be derived from packet_base)
         /// @param    value: value to store
-        /// @param    bits: bits per value element
         template <typename T>
-        void store(const delimited_array<T> &&value, size_t bits = detail::default_bitsize<T>::value)
+        void store(const delimited_array<T> &&value)
         {
-            store(value, bits);
+            store(value);
         }
 
         /// @brief [[serialize]] stores an array<T1, T2> reference into a serial buffer
@@ -572,9 +568,8 @@ namespace serdes
         /// @tparam   T: array base type (must be derived from packet_base)
         /// @tparam   T2: array size type
         /// @param    value: value to store
-        /// @param    bits: bits per value element
         template <typename T, typename T2, typename std::enable_if<std::is_base_of<packet_base, T>::value, int *>::type = nullptr>
-        void store(const array<T, T2> &value, size_t bits = detail::default_bitsize<T>::value)
+        void store(const array<T, T2> &value)
         {
             if (status != status_e::NO_ERROR)
                 return;
@@ -597,11 +592,10 @@ namespace serdes
         /// @tparam   T: array base type
         /// @tparam   T2: array size type
         /// @param    value: value to store
-        /// @param    bits: bits per value element
         template <typename T, typename T2>
-        void store(const array<T, T2> &&value, size_t bits = detail::default_bitsize<T>::value)
+        void store(const array<T, T2> &&value)
         {
-            store(value, bits);
+            store(value);
         }
 
         /// @brief [[serialize]] stores a formatter reference into a serial buffer

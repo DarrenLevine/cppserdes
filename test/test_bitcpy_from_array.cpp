@@ -293,7 +293,7 @@ static void test_from_array_floating_point()
 {
     {
         uint8_t buffer[9] = {0xDA, 0xE0, 0x62, 0xA7, 0x65, 0x8C, 0xDA, 0x16, 0x00};
-        double x = 0.0f;
+        double x = 0.0;
         serdes::bitcpy(x, serdes::sized_pointer<uint8_t>(buffer));
         ASSERT_EQUALS(x, -56789.01234E125);
     }

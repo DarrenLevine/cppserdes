@@ -256,7 +256,7 @@ namespace serdes
                 return static_cast<Tunsigned>(-(onecount != 0)) & (static_cast<Tunsigned>(-1) >> ((sizeof(Tunsigned) * 8u) - onecount));
             });
         template <typename T, requires_signed_type<T> * = nullptr>
-        constexpr void extend_sign(T &x, const size_t bits) noexcept
+        CONSTEXPR_ABOVE_CPP11 void extend_sign(T &x, const size_t bits) noexcept
         {
             if (bits >= sizeof(T) * 8u || bits == 0u)
                 return;
