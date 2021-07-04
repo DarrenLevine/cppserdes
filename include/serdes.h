@@ -15,63 +15,11 @@
 #include "serdes_errors.h"
 #include "serdes_formatter.h"
 #include "serdes_format_modifiers.h"
+#include "serdes_fwd_declarations.h"
 
 /// @brief CppSerdes library namespace
 namespace serdes
 {
-    /// @brief inheritable base class to allow format recording and application
-    /// with no additional memory storage (except for the virtual table pointer)
-    struct packet_base
-    {
-        /// @brief override to declare the serdes process used in store() and load()
-        virtual void format(packet &) = 0;
-
-        /// @brief [[serialize]] stores data into the target "sized" serial buffer according to the format() process
-        /// @tparam   T: the target buffer base type
-        /// @tparam   N: the size of the buffer
-        /// @param    target_buffer: the target serial data to store data into
-        /// @param    bit_offset: the starting bit offset
-        /// @return   serdes::status_t: the store process's resulting status
-        template <typename T, size_t N>
-        serdes::status_t store(T (&target_buffer)[N], size_t bit_offset = 0);
-
-        /// @brief [[serialize]] stores data into the target (un-sized) pointer according to the format() process
-        /// @tparam   T: pointer type of the target buffer
-        /// @param    target_buffer: the target serial data to store data into
-        /// @param    bit_offset: the starting bit offset
-        /// @return   serdes::status_t: the store process's resulting status
-        template <typename T, typename std::enable_if<std::is_pointer<T>::value && !std::is_array<T>::value, int *>::type = nullptr>
-        serdes::status_t store(T target_buffer, size_t bit_offset = 0);
-
-        /// @brief [[deserialize]] loads data from the source "sized" serial buffer according to the format() process
-        /// @tparam   T: the source buffer base type
-        /// @tparam   N: the size of the buffer
-        /// @param    source_buffer: the source serial data to read data from
-        /// @param    bit_offset: the starting bit offset
-        /// @return   serdes::status_t: the load process's resulting status
-        template <typename T, size_t N>
-        serdes::status_t load(const T (&source_buffer)[N], size_t bit_offset = 0);
-
-        /// @brief [[deserialize]] loads data into the source (un-sized) pointer according to the format() process
-        /// @tparam   T: the source buffer base type
-        /// @param    source_buffer: the source serial data to read data from
-        /// @param    bit_offset: the starting bit offset
-        /// @return   serdes::status_t: the load process's resulting status
-        template <typename T>
-        serdes::status_t load(const T *source_buffer, size_t bit_offset = 0);
-
-        virtual ~packet_base() = default;
-    };
-
-    namespace detail
-    {
-        template <>
-        struct default_bitsize<packet_base>
-        {
-            static constexpr size_t value = 0u;
-        };
-    }
-
     /// @brief a serialization/deserialization helper class, with load, store, and stream operators
     struct packet
     {

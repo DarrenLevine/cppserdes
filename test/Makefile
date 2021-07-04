@@ -10,7 +10,7 @@ The following are the valid targets for this Makefile:               \n \
 ... docs      : generates doxygen documentation and opens it         \n \
 ... clean     : removes build, doc, and gcov files                   \n \
 ... test_gcov : runs test with coverage reports                      \n \
-... msys32    : runs the tests with 32bit mingw if installed         \n" \
+... msys32    : runs the tests with 32bit mingw if installed         \n \
 ... clang     : runs the tests with clang if installed               \n"
 endef
 help:

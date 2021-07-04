@@ -36,6 +36,8 @@ int main()
         printf("Evaluated at compile time!\n");
         return 0;
     }
+
+    printf("Not evaluted at compile time!\n");
     return -1;
 }
 #endif

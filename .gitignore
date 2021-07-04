@@ -43,3 +43,7 @@ docs
 CMakeFiles
 /Makefile
 CMakeCache.txt
+
+# misc
+temp.*
+.vscode
