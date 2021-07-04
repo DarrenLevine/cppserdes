@@ -30,14 +30,14 @@
     * Read through the examples/ folder for various usage cases.
 2. Use the library in your project:
     * *Manual inclusion:* Make sure "cppserdes/include/" is added to your project's path and use as desired.
-    * *With CMake:* Adding the following lines to your CmakeLists.txt project file:
+    * *With CMake:* Add the following lines to your CmakeLists.txt project file:
 
 ```cmake
 add_subdirectory(cppserdes/)
 target_link_libraries(your_project_name cppserdes)
 ```
 
-## Object Oriented Example
+## Object Oriented Example (using serdes::packet_base)
 
 ```cpp
 #include "serdes.h"
@@ -62,7 +62,7 @@ int main() {
 }
 ```
 
-## Functional Example
+## Functional Example (using serdes::bitcpy)
 
 ```cpp
 #include "bitcpy.h"
@@ -83,7 +83,7 @@ int main() {
 }
 ```
 
-## Streams Example
+## Streams Example (using serdes::packet)
 
 ```cpp
 #include "serdes.h"
