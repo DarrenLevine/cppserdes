@@ -102,7 +102,7 @@ int main() {
 
 ## Known Limitations
 
-* Little endian is not yet supported
+* Little endian "serialization" is not yet supported (Note: little and big endian "platforms" ARE both supported)
 * Cannot bitcpy more than 0.25GB of data in a single function call (due to a memory-usage/speed design decision)
 * The examples are written using C++14 syntax for succinctness and simplicity, so if you're using an older compiler, templated fields might need to have their templates explicitly specified, for example:
 
@@ -113,7 +113,7 @@ serdes::bitpack<int>(123, serdes::bit_length(2)) // needed in < C++14
 
 ## Planned Features
 
-* Little endian support (compile time only is planned)
+* Little endian serialization support (compile time only is planned)
 * The ability to avoid serialization/deserialization by setting pointers to point to the appropriate spot within the serial buffer, instead of making a copy into a new buffer, thus saving time and memory if the serial buffer's lifetime persists longer than the reference, and the memory is aligned appropriately to allow this optimization. Similar to how capnproto and flatbuffers work.
 
 ## Requirements
