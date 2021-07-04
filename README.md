@@ -19,15 +19,18 @@
 * "constexpr" support for C++14 or greater using bitcpy function.
 * Compiles with high warning levels (pedantic, Wall, etc.).
 
+## Documentation
+
+[darrenlevine.github.io/cppserdes](https://darrenlevine.github.io/cppserdes/)
+
 ## Quick Start
 
-1. Check out the help pages:
+1. Check out the examples:
     * Compile and run "examples/01_simple_example.cpp".
     * Read through the examples/ folder for various usage cases.
-    * Read the doxygen documentation, hosted here: ![darrenlevine.github.io/cppserdes](https://darrenlevine.github.io/cppserdes/).
-2. Use the library manually:
-    Make sure "cppserdes/include/" is added to your project's path and use as desired.
-3. Use the library with CMake by adding the following lines to your CmakeLists.txt project file:
+2. Use the library in your project:
+    * *Manual inclusion:* Make sure "cppserdes/include/" is added to your project's path and use as desired.
+    * *With CMake:* Adding the following lines to your CmakeLists.txt project file:
 
 ```cmake
 add_subdirectory(cppserdes/)
