@@ -2,7 +2,7 @@
 
 ***CppSerdes*** is a serialization/deserialization library designed with embedded systems in mind
 
-[![Build Status](https://travis-ci.com/DarrenLevine/cppserdes.svg?branch=main)](https://travis-ci.com/DarrenLevine/cppserdes)
+[![Build Status](https://travis-ci.com/DarrenLevine/cppserdes.svg?branch=main)](https://travis-ci.com/DarrenLevine/cppserdes) ![license](https://img.shields.io/badge/license-MIT-informational) ![version](https://img.shields.io/badge/version-1.0-blue)
 
 ## Features
 
