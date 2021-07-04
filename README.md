@@ -2,7 +2,7 @@
 
 ***CppSerdes*** is a serialization/deserialization library designed with embedded systems in mind
 
-[![Build Status](TBD)](TBD)
+[![Build Status](https://travis-ci.com/DarrenLevine/cppserdes.svg?branch=main)](https://travis-ci.com/DarrenLevine/cppserdes)
 
 ## Features
 
@@ -24,8 +24,15 @@
 1. Check out the help pages:
     * Compile and run "examples/01_simple_example.cpp".
     * Read through the examples/ folder for various usage cases.
-    * Read the doxygen documentation ("make docs" generates and opens the documentation).
-2. Make sure "cppserdes/include/" is added to your project's path and use as desired.
+    * Read the doxygen documentation, hosted here: ![darrenlevine.github.io/cppserdes](https://darrenlevine.github.io/cppserdes/).
+2. Use the library manually:
+    Make sure "cppserdes/include/" is added to your project's path and use as desired.
+3. Use the library with CMake by adding the following lines to your CmakeLists.txt project file:
+
+```cmake
+add_subdirectory(cppserdes/)
+target_link_libraries(your_project_name cppserdes)
+```
 
 ## Object Oriented Example
 
