@@ -274,6 +274,186 @@ namespace serdes
         {
             static constexpr size_t value = 1u;
         };
+
+        template <typename T, typename T2>
+        CONSTEXPR_ABOVE_CPP11 inline T big_endian_memcpy(const T2 *const);
+
+        //
+        // uint8_t[] section
+        //
+
+        template <>
+        CONSTEXPR_ABOVE_CPP11 inline uint8_t big_endian_memcpy(const uint8_t *const data)
+        {
+            return data[0];
+        }
+        template <>
+        CONSTEXPR_ABOVE_CPP11 inline uint16_t big_endian_memcpy(const uint8_t *const data)
+        {
+            return static_cast<uint16_t>(data[0]) << 8 | static_cast<uint16_t>(data[1]);
+        }
+        template <>
+        CONSTEXPR_ABOVE_CPP11 inline uint32_t big_endian_memcpy(const uint8_t *const data)
+        {
+            return (static_cast<uint32_t>(data[0]) << 24) |
+                   (static_cast<uint32_t>(data[1]) << 16) |
+                   (static_cast<uint32_t>(data[2]) << 8) |
+                   static_cast<uint16_t>(data[3]);
+        }
+        template <>
+        CONSTEXPR_ABOVE_CPP11 inline uint64_t big_endian_memcpy(const uint8_t *const data)
+        {
+            return (static_cast<uint64_t>(data[0]) << 56) |
+                   (static_cast<uint64_t>(data[1]) << 48) |
+                   (static_cast<uint64_t>(data[2]) << 40) |
+                   (static_cast<uint64_t>(data[3]) << 32) |
+                   (static_cast<uint64_t>(data[4]) << 24) |
+                   (static_cast<uint64_t>(data[5]) << 16) |
+                   (static_cast<uint64_t>(data[6]) << 8) |
+                   static_cast<uint64_t>(data[7]);
+        }
+
+        //
+        // uint16_t[] section
+        //
+
+        template <>
+        CONSTEXPR_ABOVE_CPP11 inline uint8_t big_endian_memcpy(const uint16_t *const data)
+        {
+            return static_cast<uint8_t>(data[0] >> 8);
+        }
+        template <>
+        CONSTEXPR_ABOVE_CPP11 inline uint16_t big_endian_memcpy(const uint16_t *const data)
+        {
+            return data[0];
+        }
+        template <>
+        CONSTEXPR_ABOVE_CPP11 inline uint32_t big_endian_memcpy(const uint16_t *const data)
+        {
+            return (static_cast<uint32_t>(data[0]) << 16) | static_cast<uint32_t>(data[1]);
+        }
+        template <>
+        CONSTEXPR_ABOVE_CPP11 inline uint64_t big_endian_memcpy(const uint16_t *const data)
+        {
+            return (static_cast<uint64_t>(data[0]) << 48) |
+                   (static_cast<uint64_t>(data[1]) << 32) |
+                   (static_cast<uint64_t>(data[2]) << 16) |
+                   static_cast<uint64_t>(data[3]);
+        }
+
+        //
+        // uint32_t[] section
+        //
+
+        template <>
+        CONSTEXPR_ABOVE_CPP11 inline uint8_t big_endian_memcpy(const uint32_t *const data)
+        {
+            return static_cast<uint8_t>(data[0] >> 24);
+        }
+        template <>
+        CONSTEXPR_ABOVE_CPP11 inline uint16_t big_endian_memcpy(const uint32_t *const data)
+        {
+            return static_cast<uint16_t>(data[0] >> 16);
+        }
+        template <>
+        CONSTEXPR_ABOVE_CPP11 inline uint32_t big_endian_memcpy(const uint32_t *const data)
+        {
+            return data[0];
+        }
+        template <>
+        CONSTEXPR_ABOVE_CPP11 inline uint64_t big_endian_memcpy(const uint32_t *const data)
+        {
+            return (static_cast<uint64_t>(data[0]) << 32) |
+                   static_cast<uint64_t>(data[1]);
+        }
+
+        //
+        // uint64_t[] section
+        //
+
+        template <>
+        CONSTEXPR_ABOVE_CPP11 inline uint8_t big_endian_memcpy(const uint64_t *const data)
+        {
+            return static_cast<uint8_t>(data[0] >> 56);
+        }
+        template <>
+        CONSTEXPR_ABOVE_CPP11 inline uint16_t big_endian_memcpy(const uint64_t *const data)
+        {
+            return static_cast<uint16_t>(data[0] >> 48);
+        }
+        template <>
+        CONSTEXPR_ABOVE_CPP11 inline uint32_t big_endian_memcpy(const uint64_t *const data)
+        {
+            return static_cast<uint32_t>(data[0] >> 32);
+        }
+        template <>
+        CONSTEXPR_ABOVE_CPP11 inline uint64_t big_endian_memcpy(const uint64_t *const data)
+        {
+            return data[0];
+        }
+
+        BITCPY_INT128_CONDITIONAL_DEFINE_C(
+
+            template <>
+            CONSTEXPR_ABOVE_CPP11 inline __uint128_t big_endian_memcpy(const uint8_t *const data)
+            {
+                using T2 = uint8_t;
+                return (static_cast<__uint128_t>(big_endian_memcpy<uint64_t, T2>(data)) << 64) | static_cast<__uint128_t>(big_endian_memcpy<uint64_t, T2>(&data[8 / sizeof(T2)]));
+            }
+
+            template <>
+            CONSTEXPR_ABOVE_CPP11 inline __uint128_t big_endian_memcpy(const uint16_t *const data)
+            {
+                using T2 = uint16_t;
+                return (static_cast<__uint128_t>(big_endian_memcpy<uint64_t, T2>(data)) << 64) | static_cast<__uint128_t>(big_endian_memcpy<uint64_t, T2>(&data[8 / sizeof(T2)]));
+            }
+
+            template <>
+            CONSTEXPR_ABOVE_CPP11 inline __uint128_t big_endian_memcpy(const uint32_t *const data)
+            {
+                using T2 = uint32_t;
+                return (static_cast<__uint128_t>(big_endian_memcpy<uint64_t, T2>(data)) << 64) | static_cast<__uint128_t>(big_endian_memcpy<uint64_t, T2>(&data[8 / sizeof(T2)]));
+            }
+
+            template <>
+            CONSTEXPR_ABOVE_CPP11 inline __uint128_t big_endian_memcpy(const uint64_t *const data)
+            {
+                using T2 = uint64_t;
+                return (static_cast<__uint128_t>(big_endian_memcpy<uint64_t, T2>(data)) << 64) | static_cast<__uint128_t>(big_endian_memcpy<uint64_t, T2>(&data[8 / sizeof(T2)]));
+            }
+
+            template <>
+            CONSTEXPR_ABOVE_CPP11 inline __uint128_t big_endian_memcpy(const __uint128_t *const data)
+            {
+                return data[0];
+            }
+
+            template <>
+            CONSTEXPR_ABOVE_CPP11 inline uint64_t big_endian_memcpy(const __uint128_t *const data)
+            {
+                return static_cast<uint64_t>(data[0] >> 64);
+            }
+
+            template <>
+            CONSTEXPR_ABOVE_CPP11 inline uint32_t big_endian_memcpy(const __uint128_t *const data)
+            {
+                return static_cast<uint32_t>(data[0] >> 96);
+            }
+
+            template <>
+            CONSTEXPR_ABOVE_CPP11 inline uint16_t big_endian_memcpy(const __uint128_t *const data)
+            {
+                return static_cast<uint16_t>(data[0] >> 112);
+            }
+
+            template <>
+            CONSTEXPR_ABOVE_CPP11 inline uint8_t big_endian_memcpy(const __uint128_t *const data)
+            {
+                return static_cast<uint8_t>(data[0] >> 120);
+            }
+
+        );
+
     }
 }
 #endif // _BITCPY_COMMON_H_

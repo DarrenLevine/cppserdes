@@ -51,11 +51,26 @@ namespace serdes
             return bits;
         }
 
+        // shortcut 3: if there is no left 0 padding, and we wouldn't exceed the buffer
+        // safety limit by possibly reading past the end of the array, we can avoid the loop
+        // by using big_endian_memcpy
+        constexpr size_t bits_per_T_val = sizeof(T_val) * 8u;
+        if (number_of_bits_after_index <= bits_per_T_val)
+        {
+            const size_t alignment_shift = bits_per_T_val - number_of_bits_after_index;
+            if (alignment_shift < bits_per_T_array)
+            {
+                dest = detail::big_endian_memcpy<T_val, T_array>(&source[array_read_index]);
+                const T_val unaligned_mask = detail::bitmask<T_val>(bits);
+                dest = static_cast<T_val>(dest >> alignment_shift) & unaligned_mask;
+                return bits;
+            }
+        }
+
         // if the read DOES need to be split across > 1 array elements, or left 0 padding is needed
         const size_t num_array_elements_touched_minus_one = (number_of_bits_after_index + bits_per_T_array - 1u) / bits_per_T_array - 1u;
         const size_t bits_in_first_element = bits_per_T_array - bit_offset_from_start_index;
         size_t bits_remaining = bits - bits_in_first_element;
-        constexpr size_t bits_per_T_val = sizeof(T_val) * 8u;
         size_t start_index = 1u;
         if (bits_remaining < bits_per_T_val)
         {
@@ -221,7 +236,11 @@ namespace serdes
     /// @param    bits: number of bits to copy from
     /// @return   size_t: number of bits coppied
     template <typename T_array, typename T_val, detail::requires_large_non_integral_type<T_val> * = nullptr>
-    CONSTEXPR_ABOVE_CPP11 size_t bitcpy(T_val &dest, const T_array *const source, const size_t bit_offset = 0, const size_t bits = detail::default_bitsize<T_val>::value) noexcept
+#ifndef __clang__
+    CONSTEXPR_ABOVE_CPP11
+#endif
+        size_t
+        bitcpy(T_val &dest, const T_array *const source, const size_t bit_offset = 0, const size_t bits = detail::default_bitsize<T_val>::value) noexcept
     {
         sized_pointer<uint8_t> dest_array(reinterpret_cast<uint8_t *>(&dest), sizeof(T_val));
         return bitcpy(dest_array, source, bit_offset, bits);
