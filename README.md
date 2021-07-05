@@ -108,7 +108,7 @@ int main() {
 
 ```cpp
 serdes::bitpack(123, serdes::bit_length(2)) // works in >= C++17
-serdes::bitpack<int>(123, serdes::bit_length(2)) // needed in < C++17
+serdes::bitpack<int, int>(123, serdes::bit_length(2)) // needed in < C++17
 ```
 
 ## Planned Features
