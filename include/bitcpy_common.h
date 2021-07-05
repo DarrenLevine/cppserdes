@@ -53,12 +53,14 @@ namespace serdes
         static constexpr float version = 1.0;
     };
 
-    /// @brief Does nothing but annotate a size_t value as a bit length, used for writting clearer code.
+    /// @brief Does nothing but annotate a passed value as a bit length, used for writting clearer code.
     /// @param    x: bit length value
+    /// @tparam   T: the type of the bit length value
     /// @return   constexpr size_t: the same bit length value that was used as the input
-    constexpr size_t bit_length(size_t &&x) noexcept
+    template <typename T>
+    constexpr T bit_length(T &&x) noexcept
     {
-        return std::move(x);
+        return std::forward<T>(x);
     }
 
     /// @brief Holds a pointer to an array (with its type information) with a constant size

@@ -298,8 +298,10 @@ namespace serdes
         }
 
         /// @brief [[deserialize, pad]] applies a padding step to the load process
+        /// @tparam   ST: size type of the pad
         /// @param    padding: pad value
-        void load(const serdes::pad padding)
+        template <typename ST>
+        void load(const serdes::pad<ST> padding)
         {
             if (status != status_e::NO_ERROR)
                 return;
@@ -308,8 +310,10 @@ namespace serdes
         }
 
         /// @brief [[deserialize, align]] applies an alignment step to the load process
+        /// @tparam   ST: size type of the align
         /// @param    alignment: align value
-        void load(const serdes::align alignment)
+        template <typename ST>
+        void load(const serdes::align<ST> alignment)
         {
             if (status != status_e::NO_ERROR)
                 return;
@@ -317,20 +321,22 @@ namespace serdes
             align_assuming_no_prior_errors(alignment.value);
         }
 
-        /// @brief [[deserialize]] loads from serial buffer into a bitpack<T> rvalue
-        /// @tparam   T: underlying type of the bitpack object
+        /// @brief [[deserialize]] loads from serial buffer into a bitpack<T, ST> rvalue
+        /// @tparam   T,: underlying type of the bitpack object
+        /// @tparam   ST: underlying size type of the bitpack object
         /// @param    value: referenced bitpack rvalue
-        template <typename T>
-        void load(bitpack<T> &&value)
+        template <typename T, typename ST>
+        void load(bitpack<T, ST> &&value)
         {
             load(value.value, value.bits);
         }
 
-        /// @brief [[deserialize]] loads from serial buffer into a bitpack<T> reference
+        /// @brief [[deserialize]] loads from serial buffer into a bitpack<T, ST> reference
         /// @tparam   T: underlying type of the bitpack object
+        /// @tparam   ST: underlying size type of the bitpack object
         /// @param    value: referenced bitpack reference
-        template <typename T>
-        void load(bitpack<T> &value)
+        template <typename T, typename ST>
+        void load(bitpack<T, ST> &value)
         {
             load(value.value, value.bits);
         }
@@ -569,8 +575,10 @@ namespace serdes
         }
 
         /// @brief [[serialize, pad]] applies a padding step to the store process
+        /// @tparam   ST: size type of the pad
         /// @param    padding: pad value
-        void store(const serdes::pad padding)
+        template <typename ST>
+        void store(const serdes::pad<ST> padding)
         {
             if (status != status_e::NO_ERROR)
                 return;
@@ -579,8 +587,10 @@ namespace serdes
         }
 
         /// @brief [[serialize, align]] applies an alignment step to the store process
+        /// @tparam   ST: size type of the align
         /// @param    alignment: align value
-        void store(const serdes::align alignment)
+        template <typename ST>
+        void store(const serdes::align<ST> alignment)
         {
             if (status != status_e::NO_ERROR)
                 return;
@@ -588,20 +598,22 @@ namespace serdes
             align(alignment.value);
         }
 
-        /// @brief [[serialize]] stores a bitpack<T> rvalue into a serial buffer
+        /// @brief [[serialize]] stores a bitpack<T, ST> rvalue into a serial buffer
         /// @tparam   T: the type of the underlying bitpacked object
+        /// @tparam   ST: underlying size type of the bitpack object
         /// @param    value: value to store
-        template <typename T>
-        void store(const bitpack<T> &&value)
+        template <typename T, typename ST>
+        void store(const bitpack<T, ST> &&value)
         {
             store(value.value, value.bits);
         }
 
-        /// @brief [[serialize]] stores a bitpack<T> reference into a serial buffer
+        /// @brief [[serialize]] stores a bitpack<T, ST> reference into a serial buffer
         /// @tparam   T: the type of the underlying bitpacked object
+        /// @tparam   ST: underlying size type of the bitpack object
         /// @param    value: value to store
-        template <typename T>
-        void store(const bitpack<T> &value)
+        template <typename T, typename ST>
+        void store(const bitpack<T, ST> &value)
         {
             store(value.value, value.bits);
         }

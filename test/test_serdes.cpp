@@ -148,12 +148,39 @@ static void test_bitpacked_arrays()
     int array_length = 8;
     using test_array_t = serdes::array<uint64_t, int>;
     uint16_t serial_data[4] = {};
-    serdes::packet(serial_data) << serdes::bitpack<test_array_t>(test_array_t(AB_flags, array_length), 1) << serdes::bitpack<uint64_t[8]>(CD_flags, 1);
+    serdes::packet(serial_data) << serdes::bitpack<test_array_t, int>(test_array_t(AB_flags, array_length), 1) << serdes::bitpack<uint64_t[8], size_t>(CD_flags, 1);
     ASSERT_EQUALS(serial_data, {0xABCD, 0x0000});
     std::fill(AB_flags, AB_flags + 8, 0xF0);
-    serdes::packet(serial_data) >> serdes::bitpack<test_array_t>(test_array_t(AB_flags, array_length), 1) << serdes::bitpack<uint64_t[8]>(CD_flags, 1);
+    serdes::packet(serial_data) >> serdes::bitpack<test_array_t, int>(test_array_t(AB_flags, array_length), 1) << serdes::bitpack<uint64_t[8], size_t>(CD_flags, 1);
     ASSERT_EQUALS(AB_flags, {1, 0, 1, 0, 1, 0, 1, 1});
     ASSERT_EQUALS(CD_flags, {1, 1, 0, 0, 1, 1, 0, 1});
+}
+
+static void test_dynamic_bitlength_captures()
+{
+    struct my_info : serdes::packet_base
+    {
+        int8_t bits_in_time_tag = 0;
+        uint16_t time_tag = 0;
+        int8_t bits_in_time_tag2 = 0;
+        uint16_t time_tag2 = 0;
+
+        void format(serdes::packet &archive)
+        {
+            archive +
+                bits_in_time_tag +
+                serdes::bitpack<uint16_t, int8_t>(time_tag, bits_in_time_tag) +
+                bits_in_time_tag2 +
+                serdes::bitpack<uint16_t, int8_t>(time_tag2, serdes::bit_length(bits_in_time_tag2));
+        }
+    };
+    uint16_t serial_data[] = {0x4B0, 0x8AB0};
+    my_info object;
+    object.load(serial_data);
+    ASSERT_EQUALS(object.bits_in_time_tag, 4_i8);
+    ASSERT_EQUALS(object.time_tag, 0xB_u16);
+    ASSERT_EQUALS(object.bits_in_time_tag2, 8_i8);
+    ASSERT_EQUALS(object.time_tag2, 0xAB_u16);
 }
 
 static void test_aligned_byte_arrays()
@@ -223,7 +250,7 @@ static void test_inheritance_nesting()
         void format(serdes::packet &p) override
         {
             header_type::format(p);
-            p + serdes::pad(5) + flags + serdes::bitpack<uint32_t>(pattern, 23) + serdes::align(8) + x + y + z;
+            p + serdes::pad<int>(5) + flags + serdes::bitpack<uint32_t, int>(pattern, 23) + serdes::align<int>(8) + x + y + z;
         }
     };
 
@@ -315,7 +342,7 @@ static void test_bitpacking_and_strings()
     uint32_t serial_data[10] = {};
 
     // serialize some data
-    serdes::packet(serial_data) << 0xABCD_u16 << "hello!" << 123_i8 << serdes::bitpack<int32_t>(-9_i32, serdes::bit_length(6));
+    serdes::packet(serial_data) << 0xABCD_u16 << "hello!" << 123_i8 << serdes::bitpack<int32_t, int>(-9_i32, serdes::bit_length(6));
 
     ASSERT_EQUALS(serial_data, {0xABCD6865_u32, 0x6C6C6F21_u32, 0x007BDC00_u32, 0x00000000_u32});
 
@@ -325,7 +352,7 @@ static void test_bitpacking_and_strings()
     char str[7];
 
     // deserialize the data
-    serdes::packet(serial_data) >> x >> str >> y >> serdes::bitpack<int32_t>(z, serdes::bit_length(6));
+    serdes::packet(serial_data) >> x >> str >> y >> serdes::bitpack<int32_t, int>(z, serdes::bit_length(6));
 
     ASSERT_EQUALS(x, 0xABCD);
     ASSERT_EQUALS(y, 123);
@@ -337,13 +364,13 @@ static void test_alignment_and_padding()
     {
         uint16_t serial_data[10] = {};
         serdes::packet p(serial_data);
-        p << serdes::pad(10) << 0xFBCD_u16 << serdes::align(32) << serdes::bitpack<int32_t>(0x12F, serdes::bit_length(4)) << 0x1ABC_u16;
+        p << serdes::pad<int>(10) << 0xFBCD_u16 << serdes::align<int>(32) << serdes::bitpack<int32_t, int>(0x12F, serdes::bit_length(4)) << 0x1ABC_u16;
         ASSERT_EQUALS(serial_data, {0x003E, 0xF340, 0xF1AB, 0xC000});
 
         uint16_t x;
         uint16_t y;
         uint16_t z;
-        p >> serdes::pad(10) >> x >> serdes::align(32) >> serdes::bitpack<uint16_t>(y, serdes::bit_length(4)) >> z;
+        p >> serdes::pad<int>(10) >> x >> serdes::align<int>(32) >> serdes::bitpack<uint16_t, int>(y, serdes::bit_length(4)) >> z;
 
         ASSERT_EQUALS(x, 0xFBCD);
         ASSERT_EQUALS(y, 0xF);
@@ -357,7 +384,7 @@ static void test_alignment_and_padding()
             uint16_t z = 0x1ABC;
             void format(serdes::packet &p) override
             {
-                p + serdes::pad(10) + x + serdes::align(32) + serdes::bitpack<uint16_t>(y, serdes::bit_length(4)) + z;
+                p + serdes::pad<int>(10) + x + serdes::align<int>(32) + serdes::bitpack<uint16_t, int>(y, serdes::bit_length(4)) + z;
             }
         };
         test_struct object;
@@ -513,7 +540,7 @@ static void test_nested_delimited_arrays()
         char data = 0;
         void format(serdes::packet &p) override
         {
-            p + serdes::pad(2) + serdes::bitpack<char>(data, 6);
+            p + serdes::pad<int>(2) + serdes::bitpack<char, int>(data, 6);
         }
         my_bitpacked_char &operator=(const char x)
         {
@@ -586,7 +613,7 @@ static void test_bitpacked_delimited_arrays()
         unsigned char data[100] = {};
         void format(serdes::packet &p) override
         {
-            p + serdes::bitpack<serdes::delimited_array<unsigned char>>(serdes::delimited_array<unsigned char>(data, '\0'), 4);
+            p + serdes::bitpack<serdes::delimited_array<unsigned char>, int>(serdes::delimited_array<unsigned char>(data, '\0'), 4);
         }
     };
 
@@ -732,6 +759,7 @@ static void testset_serdes()
     test_variable_packet_base_arrays();
     test_fixed_sized_arrays();
     test_bitpacked_arrays();
+    test_dynamic_bitlength_captures();
     test_aligned_byte_arrays();
     test_inheritance_nesting();
     test_edittable_formats();

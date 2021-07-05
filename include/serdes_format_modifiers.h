@@ -13,72 +13,77 @@
 namespace serdes
 {
     /// @brief specifies a number of bits to be used to align the bit offset as a multiple of
+    /// @tparam   ST: type of the align value
+    template <typename ST>
     struct align
     {
         /// bit alignment reference value
-        const size_t &value;
+        const ST &value;
 
         /// @brief Construct a new align object, binding to a reference of the number of bits to align by
         /// @param    bits
-        align(const size_t &bits) noexcept : value{bits} {}
+        align(const ST &bits) noexcept : value{bits} {}
 
         /// @brief Construct a new align object, binding to a rvalue of the number of bits to align by
         /// @param    bits
-        align(size_t &&bits) noexcept : value{std::move(bits)} {}
+        align(ST &&bits) noexcept : value{bits} {}
     };
 
     /// @brief specifies a number of bits to be used to pad (add to) the current bit offset
+    /// @tparam   ST: type of the pad value
+    template <typename ST>
     struct pad
     {
         /// bit pad reference value
-        const size_t &value;
+        const ST &value;
 
         /// @brief Construct a new pad object, binding to a reference of the number of bits to pad by
         /// @param    bits
-        pad(const size_t &bits) noexcept : value{bits} {}
+        pad(const ST &bits) noexcept : value{bits} {}
 
         /// @brief Construct a new pad object, binding to a rvalue of the number of bits to pad by
         /// @param    bits
-        pad(size_t &&bits) noexcept : value{std::move(bits)} {}
+        pad(ST &&bits) noexcept : value{bits} {}
     };
 
-    /// @brief bitpack a value into exact the specified bits. If applied to an array
+    /// @brief bitpack a value into an exact number of specified bits. If applied to an array
     /// it will be applied to each element of the array, not the total bits in the array
     /// @tparam   T: the type of the value bitpacked
-    template <typename T>
+    /// @tparam   ST: the size type of the bit length value
+    template <typename T, typename ST>
     struct bitpack
     {
         /// @brief a reference to the bitpacked value
         T &value;
 
         /// @brief a reference to the number of bits to use when storing/loading the referenced value
-        const size_t &bits;
+        const ST &bits;
 
         /// @brief Construct a new bitpack object from a rvalue value, and rvalue bit length
         /// @param    v: referenced value
         /// @param    b: number of bits to pack into
-        bitpack(T &&v, size_t &&b) noexcept : value{v}, bits{b} {}
+        bitpack(T &&v, ST &&b) noexcept : value{v}, bits{b} {}
 
         /// @brief Construct a new bitpack object from a reference value, and rvalue bit length
         /// @param    v: referenced value
         /// @param    b: number of bits to pack into
-        bitpack(T &v, size_t &&b) noexcept : value{v}, bits{b} {}
+        bitpack(T &v, ST &&b) noexcept : value{v}, bits{b} {}
 
         /// @brief Construct a new bitpack object from a reference value, and reference bit length
         /// @param    v: referenced value
         /// @param    b: number of bits to pack into
-        bitpack(T &v, const size_t &b) noexcept : value{v}, bits{b} {}
+        bitpack(T &v, const ST &b) noexcept : value{v}, bits{b} {}
 
         /// @brief Construct a new bitpack object from a rvalue value, and reference bit length
         /// @param    v: referenced value
         /// @param    b: number of bits to pack into
-        bitpack(T &&v, const size_t &b) noexcept : value{v}, bits{b} {}
+        bitpack(T &&v, const ST &b) noexcept : value{v}, bits{b} {}
     };
 
     /// @brief a container for fixed or dynamically sized arrays, with an upper bounds limit for safety
     /// @tparam   T: the array element type
     /// @tparam   ST: the type of the variable used by reference to adjust and report the array size
-    template <typename T, typename ST = size_t>
+    template <typename T, typename ST>
     struct array
     {
         /// @brief a pointer to the array head
@@ -164,8 +169,8 @@ namespace serdes
     struct formatter;
     namespace detail
     {
-        template <typename T>
-        struct default_bitsize<bitpack<T>>
+        template <typename T, typename ST>
+        struct default_bitsize<bitpack<T, ST>>
         {
             static constexpr size_t value = 0u;
         };
@@ -179,13 +184,13 @@ namespace serdes
         {
             static constexpr size_t value = sizeof(T) * 8u;
         };
-        template <>
-        struct default_bitsize<align>
+        template <typename ST>
+        struct default_bitsize<align<ST>>
         {
             static constexpr size_t value = 0u;
         };
-        template <>
-        struct default_bitsize<pad>
+        template <typename ST>
+        struct default_bitsize<pad<ST>>
         {
             static constexpr size_t value = 0u;
         };
@@ -198,16 +203,16 @@ namespace serdes
         struct is_format_modifier<formatter> : std::true_type
         {
         };
-        template <>
-        struct is_format_modifier<pad> : std::true_type
+        template <typename ST>
+        struct is_format_modifier<pad<ST>> : std::true_type
         {
         };
-        template <>
-        struct is_format_modifier<align> : std::true_type
+        template <typename ST>
+        struct is_format_modifier<align<ST>> : std::true_type
         {
         };
-        template <typename T>
-        struct is_format_modifier<bitpack<T>> : std::true_type
+        template <typename T, typename ST>
+        struct is_format_modifier<bitpack<T, ST>> : std::true_type
         {
         };
         template <typename T1, typename T2>
