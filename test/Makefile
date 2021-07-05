@@ -28,7 +28,8 @@ LOTS_OF_WARNINGS = \
 	-Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-promo \
 	-Wstrict-null-sentinel -Wswitch-default -Wundef -Wno-unused -Wdouble-promotion -Wstrict-overflow=5 \
 	-Wstrict-aliasing=2 -Wformat=2 -Weffc++
-ifneq ($(MAKECMDGOALS),$(clang))
+ifeq ($(MAKECMDGOALS),clang)
+$(info configuring with clang++)
 CXX := clang++
 LOTS_OF_WARNINGS := \
 	-Werror -Wmissing-format-attribute -Wall -Wextra -pedantic -Wcast-align -Wcast-qual \
@@ -58,11 +59,12 @@ test:
 # runs all unit tests using /c/msys64/mingw32/bin/g++.exe 32bit compiler 
 msys32: test
 .PHONY: msys32
-ifneq ($(MAKECMDGOALS),$(msys32))
+ifeq ($(MAKECMDGOALS),msys32)
+$(info configuring with /c/msys64/mingw32/bin/g++)
 export PATH := /c/msys64/mingw32/bin/:$(PATH)
 endif
 
-# runs all unit tests using /c/msys64/mingw32/bin/g++.exe 32bit compiler 
+# runs all unit tests using clang compiler 
 clang: test
 .PHONY: clang
 

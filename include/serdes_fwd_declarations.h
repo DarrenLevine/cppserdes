@@ -20,6 +20,8 @@
 #define _SERDES_FWD_DECLARATIONS_H_
 
 #include <type_traits>
+#include <utility>
+#include <stdint.h>
 
 /// @brief CppSerdes library namespace
 namespace serdes
@@ -74,6 +76,20 @@ namespace serdes
         /// @return   serdes::status_t: the load process's resulting status
         template <typename T>
         serdes::status_t load(const T *source_buffer, size_t bit_offset = 0);
+
+        /// @brief [[serialize]] stores the packet_base object into the passed serial data (same as store)
+        /// @tparam   T: value type
+        /// @param    value: serial buffer
+        /// @return   status_t: status of the store operation
+        template <typename T>
+        serdes::status_t operator>>(T &&value);
+
+        /// @brief [[deserialize]] loads packet_base data into the passed serial data (same as load)
+        /// @tparam   T: value type
+        /// @param    value: serial buffer
+        /// @return   status_t: status of the load operation
+        template <typename T>
+        serdes::status_t operator<<(T &&value);
 
         virtual ~packet_base() = default;
     };

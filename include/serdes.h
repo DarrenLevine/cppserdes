@@ -840,6 +840,16 @@ namespace serdes
         format(pkt_obj);
         return {pkt_obj.status, pkt_obj.bit_offset};
     }
+    template <typename T>
+    status_t packet_base::operator>>(T &&value)
+    {
+        return store(std::forward<T>(value));
+    }
+    template <typename T>
+    status_t packet_base::operator<<(T &&value)
+    {
+        return load(std::forward<T>(value));
+    }
 }
 
 #endif // _SERDES_H_
