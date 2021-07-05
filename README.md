@@ -104,11 +104,11 @@ int main() {
 
 * Little endian "serialization" is not yet supported (Note: little and big endian "platforms" ARE both supported)
 * Cannot bitcpy more than 0.25GB of data in a single function call (due to a memory-usage/speed design decision)
-* The examples are written using C++14 syntax for succinctness and simplicity, so if you're using an older compiler, templated fields might need to have their templates explicitly specified, for example:
+* The examples are written using C++17 syntax for succinctness and simplicity, so if you're using an older compiler, templated fields might need to have their templates explicitly specified, for example:
 
 ```cpp
-serdes::bitpack(123, serdes::bit_length(2)) // works in >= C++14
-serdes::bitpack<int>(123, serdes::bit_length(2)) // needed in < C++14
+serdes::bitpack(123, serdes::bit_length(2)) // works in >= C++17
+serdes::bitpack<int>(123, serdes::bit_length(2)) // needed in < C++17
 ```
 
 ## Planned Features
