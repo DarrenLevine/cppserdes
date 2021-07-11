@@ -152,7 +152,8 @@ namespace serdes
         template <typename T>
         using requires_unsigned_type = typename std::enable_if<
             BITCPY_INT128_CONDITIONAL_DEFINE(
-                std::is_same<T, __uint128_t>::value ||)(std::is_integral<T>::value && !std::is_same<T, bool>::value && !std::is_signed<T>::value),
+                std::is_same<T, __uint128_t>::value ||)(!std::is_same<T, char>::value && std::is_integral<T>::value && !std::is_same<T, bool>::value && !std::is_signed<T>::value) ||
+                (std::is_same<T, char>::value && std::is_same<char, uint8_t>::value), // char is a special case, reinterpret it to uint8_t to reduce the template code generated if != uint8_t
             T>::type;
         template <typename T>
         using requires_bool_type = typename std::enable_if<
@@ -164,7 +165,8 @@ namespace serdes
             T>::type;
         template <typename T>
         using requires_signed_type = typename std::enable_if<
-            BITCPY_INT128_CONDITIONAL_DEFINE(std::is_same<T, __int128_t>::value ||)(std::is_integral<T>::value && !std::is_same<T, bool>::value && std::is_signed<T>::value),
+            BITCPY_INT128_CONDITIONAL_DEFINE(std::is_same<T, __int128_t>::value ||)(!std::is_same<T, char>::value && std::is_integral<T>::value && !std::is_same<T, bool>::value && std::is_signed<T>::value) ||
+                (std::is_same<T, char>::value && !std::is_same<char, uint8_t>::value), // char is a special case, reinterpret it to uint8_t to reduce the template code generated if != uint8_t
             T>::type;
         template <typename T>
         using requires_large_non_integral_type = typename std::enable_if<
