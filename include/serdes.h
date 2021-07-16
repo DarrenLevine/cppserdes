@@ -37,24 +37,38 @@ namespace serdes
         }
 
         /// @brief Construct a new packet object from an c style array pointer
-        /// @tparam   T_array: the array's base type
+        /// @tparam   T_pointer: the array's base pointer type
         /// @param    array_init: an array pointer (without size)
+        /// @param    max_elements: the maximum number of elements to use in the array
         /// @param    b_offset: bit offset to start serdes process at
         /// @param    m: starting mode (LOADING/STORING/UNSPECIFIED)
-        template <typename T_array>
-        packet(T_array array_init[], size_t b_offset = 0, mode_e m = mode_e::UNSPECIFIED)
-            : buffer{array_init, ~size_t(0)},
+        template <typename T_pointer, typename std::enable_if<std::is_pointer<T_pointer>::value, int *>::type = nullptr>
+        packet(T_pointer array_init, size_t max_elements = ~size_t(0), size_t b_offset = 0, mode_e m = mode_e::UNSPECIFIED)
+            : buffer{array_init, max_elements},
+              bit_offset{b_offset},
+              mode{m},
+              bit_capacity{buffer.bit_capacity()} {}
+
+        /// @brief Construct a new packet object from an c style array pointer
+        /// @tparam   T_array: the array's base type
+        /// @param    array_init: an array pointer (without size)
+        /// @param    max_elements: the maximum number of elements to use in the array (can be <= N)
+        /// @param    b_offset: bit offset to start serdes process at
+        /// @param    m: starting mode (LOADING/STORING/UNSPECIFIED)
+        template <typename T_array, size_t N>
+        packet(T_array (&array_init)[N], size_t max_elements = ~size_t(0), size_t b_offset = 0, mode_e m = mode_e::UNSPECIFIED)
+            : buffer{array_init, max_elements < N ? max_elements : N},
               bit_offset{b_offset},
               mode{m},
               bit_capacity{buffer.bit_capacity()} {}
 
         /// @brief Construct a new packet object from an sized_pointer array for size safety
-        /// @tparam   T_array: the array's base type
+        /// @tparam   T_sized_pointer: the array's sized_pointer type
         /// @param    array_init: an array with size information
         /// @param    b_offset: bit offset to start serdes process at
         /// @param    m: starting mode (LOADING/STORING/UNSPECIFIED)
-        template <typename T_array>
-        packet(serdes::sized_pointer<T_array> array_init, size_t b_offset = 0, mode_e m = mode_e::UNSPECIFIED)
+        template <typename T_sized_pointer, typename std::enable_if<serdes::detail::is_sized_pointer<T_sized_pointer>::value, int *>::type = nullptr>
+        packet(T_sized_pointer array_init, size_t b_offset = 0, mode_e m = mode_e::UNSPECIFIED)
             : buffer{array_init.value, array_init.size},
               bit_offset{b_offset},
               mode{m},
@@ -824,31 +838,51 @@ namespace serdes
         }
     };
 
-    template <typename T, size_t N>
-    status_t packet_base::store(T (&target_buffer)[N], size_t bit_offset)
+    template <typename T_array, size_t N>
+    status_t packet_base::store(T_array (&target_buffer)[N], size_t max_elements, size_t bit_offset)
     {
-        packet pkt_obj(serdes::sized_pointer<T>(&target_buffer[0], N), bit_offset, mode_e::STORING);
+        if (N < max_elements)
+            max_elements = N;
+        packet pkt_obj(serdes::sized_pointer<T_array>(&target_buffer[0], max_elements), bit_offset, mode_e::STORING);
         format(pkt_obj);
         return {pkt_obj.status, pkt_obj.bit_offset};
     }
-    template <typename T, typename std::enable_if<std::is_pointer<T>::value && !std::is_array<T>::value, int *>::type>
-    status_t packet_base::store(T target_buffer, size_t bit_offset)
+
+    template <typename T_pointer, typename std::enable_if<std::is_pointer<T_pointer>::value, int *>::type>
+    status_t packet_base::store(T_pointer target_buffer, size_t max_elements, size_t bit_offset)
+    {
+        packet pkt_obj(serdes::sized_pointer<typename std::remove_pointer<T_pointer>::type>(target_buffer, max_elements), bit_offset, mode_e::STORING);
+        format(pkt_obj);
+        return {pkt_obj.status, pkt_obj.bit_offset};
+    }
+
+    template <typename T_sized_pointer, typename std::enable_if<serdes::detail::is_sized_pointer<T_sized_pointer>::value, int *>::type>
+    status_t packet_base::store(T_sized_pointer target_buffer, size_t bit_offset)
     {
         packet pkt_obj(target_buffer, bit_offset, mode_e::STORING);
         format(pkt_obj);
         return {pkt_obj.status, pkt_obj.bit_offset};
     }
-    template <typename T, size_t N>
-    status_t packet_base::load(const T (&source_buffer)[N], size_t bit_offset)
+    template <typename T_array, size_t N>
+    status_t packet_base::load(const T_array (&source_buffer)[N], size_t max_elements, size_t bit_offset)
     {
-        packet pkt_obj(serdes::sized_pointer<const T>(&source_buffer[0], N), bit_offset, mode_e::LOADING);
+        if (N < max_elements)
+            max_elements = N;
+        packet pkt_obj(serdes::sized_pointer<const T_array>(&source_buffer[0], N), bit_offset, mode_e::LOADING);
         format(pkt_obj);
         return {pkt_obj.status, pkt_obj.bit_offset};
     }
-    template <typename T>
-    status_t packet_base::load(const T *source_buffer, size_t bit_offset)
+    template <typename T_pointer, typename std::enable_if<std::is_pointer<T_pointer>::value, int *>::type>
+    status_t packet_base::load(const T_pointer source_buffer, size_t max_elements, size_t bit_offset)
     {
-        packet pkt_obj(source_buffer, bit_offset, mode_e::LOADING);
+        packet pkt_obj(serdes::sized_pointer<const typename std::remove_pointer<T_pointer>::type>(source_buffer, max_elements), bit_offset, mode_e::LOADING);
+        format(pkt_obj);
+        return {pkt_obj.status, pkt_obj.bit_offset};
+    }
+    template <typename T_sized_pointer, typename std::enable_if<serdes::detail::is_sized_pointer<T_sized_pointer>::value, int *>::type>
+    status_t packet_base::load(const T_sized_pointer target_buffer, size_t bit_offset)
+    {
+        packet pkt_obj(target_buffer, bit_offset, mode_e::LOADING);
         format(pkt_obj);
         return {pkt_obj.status, pkt_obj.bit_offset};
     }

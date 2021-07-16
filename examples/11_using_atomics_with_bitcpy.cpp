@@ -1,12 +1,19 @@
 /// @example 11_using_atomics_with_bitcpy.cpp
 /// @brief This example demonstrates how to serialize/deserialize data atomically
 
-#include "../include/bitcpy.h"
+#include "../include/serdes.h"
 #include <stdio.h>
 #include <atomic>
 
 uint8_t original_value = 0xAB;
 std::atomic<uint8_t> atomic_value{original_value};
+static void test_recovered_original_value()
+{
+    if (atomic_value == original_value)
+        printf("Atomic value recovered (0x%X).\n", atomic_value.load());
+    else
+        printf("...failed to recover atomic value (0x%X)!\n", atomic_value.load());
+}
 
 int main()
 {
@@ -18,11 +25,21 @@ int main()
     // corrupt the value
     atomic_value = 0u;
 
-    // recover the value
+    // recover the value with bitcpy
     serdes::bitcpy(atomic_value, storage_array);
+    test_recovered_original_value();
 
-    if (atomic_value == original_value)
-        printf("Atomic value recovered (0x%X).\n", atomic_value.load());
-    else
-        printf("...failed to recover atomic value (0x%X)!\n", atomic_value.load());
+    // recover the value with streams
+    storage_array[0] = 0;
+    serdes::packet(storage_array, 2) << atomic_value;
+    atomic_value = 0x56u;
+    serdes::packet(storage_array, 2) >> atomic_value;
+    test_recovered_original_value();
+
+    // recover the value with .add formatters
+    storage_array[0] = 0;
+    serdes::packet(storage_array, sizeof(storage_array), 0, serdes::mode_e::STORING) + atomic_value;
+    atomic_value = 0x78u;
+    serdes::packet(storage_array, sizeof(storage_array), 0, serdes::mode_e::LOADING) + atomic_value;
+    test_recovered_original_value();
 }

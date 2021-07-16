@@ -11,7 +11,7 @@ install:
 
 script:
   - cd test
-  - make || exit 1
+  - make test_gcov || exit 1
   - cd ../
   - doxygen Doxyfile
 
