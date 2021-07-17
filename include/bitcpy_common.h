@@ -12,12 +12,13 @@
 #include <type_traits>
 #include <utility>
 #include "bitcpy_sized_pointer.h"
-
+#if !defined(configBITCPY_COMMON_DISABLE_ATOMIC_FWD_DECL) && !defined(_GLIBCXX_ATOMIC) && !defined(atomic)
 namespace std
 {
     template <typename _Tp>
     struct atomic; // forward declaration
 }
+#endif
 #if !defined(__cplusplus) || (__cplusplus < 201402L)
 /// @brief if == 1 constexpr for bitcpy is supported
 #define BITCPY_CONSTEXPR_SUPPORTED 0

@@ -33,7 +33,7 @@ namespace serdes
         /// @brief ""_i32 = int32_t
         inline constexpr int32_t operator""_i32(unsigned long long val) noexcept { return val; }
         /// @brief ""_i64 = int64_t
-        inline constexpr int64_t operator""_i64(unsigned long long val) noexcept { return val; }
+        inline constexpr int64_t operator""_i64(unsigned long long val) noexcept { return static_cast<int64_t>(val); }
     }
 }
 
