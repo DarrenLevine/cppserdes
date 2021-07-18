@@ -35,7 +35,7 @@ namespace serdes
         // shortcut 1: handle exact bit size and offset match
         if (bits == bits_per_T_array && bit_offset_from_start_index == 0)
         {
-            dest = source[array_read_index];
+            dest = static_cast<T_val>(source[array_read_index]);
             return bits;
         }
 
@@ -47,7 +47,7 @@ namespace serdes
                 return bits;
             const T_array unaligned_mask = detail::bitmask<T_val>(bits);
             const size_t alignment_shift = bits_per_T_array - number_of_bits_after_index;
-            dest = static_cast<T_array>(source[array_read_index] >> alignment_shift) & unaligned_mask;
+            dest = static_cast<T_val>(static_cast<T_array>(source[array_read_index] >> alignment_shift) & unaligned_mask);
             return bits;
         }
 
