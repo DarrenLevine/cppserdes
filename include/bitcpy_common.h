@@ -171,7 +171,7 @@ namespace serdes
         __attribute__((pure)) constexpr T bitmask(const size_t onecount) noexcept
         {
             using Tunsigned = typename std::make_unsigned<T>::type;
-            return static_cast<Tunsigned>(-(onecount != 0)) & (static_cast<Tunsigned>(-1) >> ((sizeof(Tunsigned) * 8u) - onecount));
+            return static_cast<T>((static_cast<Tunsigned>(~static_cast<Tunsigned>(0u)) >> ((sizeof(Tunsigned) * 8u) - onecount)) * static_cast<Tunsigned>(onecount != 0));
         }
         BITCPY_INT128_CONDITIONAL_DEFINE_C(
             template <>
