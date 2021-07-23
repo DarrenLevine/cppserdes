@@ -206,7 +206,12 @@ namespace serdes
         };
 
         template <typename T, typename T2>
-        CONSTEXPR_ABOVE_CPP11 inline T big_endian_memcpy(const T2 *const);
+        CONSTEXPR_ABOVE_CPP11 inline T big_endian_memcpy(const T2 *const)
+        {
+            static_assert(sizeof(T) == 0,
+                          "Use big_endian_memcpy_unsigned instead. Either you tried to use a "
+                          "signed type which is not supported, or a type larger than 128bits");
+        }
 
         //
         // uint8_t[] section
@@ -384,6 +389,13 @@ namespace serdes
 
         );
 
+        template <typename T, typename T2>
+        CONSTEXPR_ABOVE_CPP11 inline T big_endian_memcpy_unsigned(const T2 *const v)
+        {
+            return big_endian_memcpy<
+                typename detail::unsigned_type_sizeof<sizeof(T)>::type,
+                typename detail::unsigned_type_sizeof<sizeof(T2)>::type>(v);
+        }
     }
 }
 #endif // _BITCPY_COMMON_H_

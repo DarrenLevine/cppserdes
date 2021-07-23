@@ -60,7 +60,7 @@ namespace serdes
             const size_t alignment_shift = bits_per_T_val - number_of_bits_after_index;
             if (alignment_shift < bits_per_T_array)
             {
-                dest = detail::big_endian_memcpy<T_val, T_array>(&source[array_read_index]);
+                dest = detail::big_endian_memcpy_unsigned<T_val, T_array>(&source[array_read_index]);
                 const T_val unaligned_mask = detail::bitmask<T_val>(bits);
                 dest = static_cast<T_val>(dest >> alignment_shift) & unaligned_mask;
                 return bits;
