@@ -12,14 +12,19 @@
 #include <type_traits>
 #include <utility>
 #include "bitcpy_sized_pointer.h"
-#if !defined(configBITCPY_COMMON_DISABLE_ATOMIC_FWD_DECL) && !defined(_GLIBCXX_ATOMIC) && !defined(atomic)
+
+// use the compilation flag "-DconfigBITCPY_COMMON_DISABLE_ATOMIC_FWD_DECL" to disable this
+#if !defined(configBITCPY_COMMON_DISABLE_ATOMIC_FWD_DECL) && !defined(_GLIBCXX_ATOMIC) && !defined(atomic) && !defined(__APPLE__)
 namespace std
 {
     template <typename _Tp>
     struct atomic; // forward declaration
 }
 #endif
-#if !defined(__cplusplus) || (__cplusplus < 201402L)
+
+// use the compilation flag "-DconfigBITCPY_DISABLE_CONSTEXPR" to disable this
+#ifndef CONSTEXPR_ABOVE_CPP11
+#if defined(configBITCPY_DISABLE_CONSTEXPR) || !defined(__cplusplus) || (__cplusplus < 201402L)
 /// @brief if == 1 constexpr for bitcpy is supported
 #define BITCPY_CONSTEXPR_SUPPORTED 0
 /// @brief resolves automatically to "constexpr" if C++14 or greater
@@ -29,6 +34,23 @@ namespace std
 #define BITCPY_CONSTEXPR_SUPPORTED 1
 /// @brief resolves automatically to "constexpr" if C++14 or greater
 #define CONSTEXPR_ABOVE_CPP11 constexpr
+#endif
+#endif
+
+// use the compilation flag "-DconfigBITCPY_DISABLE_CONSTEXPR_NON_LIT" to disable this
+// NOTE: "Non-literal variables (and labels and gotos) in constexpr functions" not suppored by apple: https://en.cppreference.com/w/cpp/compiler_support#cpp14
+#ifndef CONSTEXPR_ABOVE_CPP11_AND_NON_LITERAL_STORAGE
+#if defined(configBITCPY_DISABLE_CONSTEXPR_NON_LIT) || !defined(__cplusplus) || (__cplusplus < 201402L) || defined(__APPLE__)
+/// @brief if == 1 constexpr for bitcpy functions using non-literal storage is supported
+#define BITCPY_CONSTEXPR_NON_LITERAL_STORAGE_SUPPORTED 0
+/// @brief resolves automatically to "constexpr" if C++14 or greater
+#define CONSTEXPR_ABOVE_CPP11_AND_NON_LITERAL_STORAGE
+#else
+/// @brief if == 1 constexpr for bitcpy functions using non-literal storage is supported
+#define BITCPY_CONSTEXPR_NON_LITERAL_STORAGE_SUPPORTED 1
+/// @brief resolves automatically to "constexpr" if C++14 or greater
+#define CONSTEXPR_ABOVE_CPP11_AND_NON_LITERAL_STORAGE constexpr
+#endif
 #endif
 
 #ifdef __SIZEOF_INT128__
@@ -175,13 +197,11 @@ namespace serdes
         }
         BITCPY_INT128_CONDITIONAL_DEFINE_C(
             template <>
-            __attribute__((pure)) constexpr __int128_t bitmask<__int128_t>(const size_t onecount) noexcept
-            {
+            __attribute__((pure)) constexpr __int128_t bitmask<__int128_t>(const size_t onecount) noexcept {
                 using Tunsigned = __uint128_t;
                 return static_cast<Tunsigned>(-(onecount != 0)) & (static_cast<Tunsigned>(-1) >> ((sizeof(Tunsigned) * 8u) - onecount));
             } template <>
-            __attribute__((pure)) constexpr __uint128_t bitmask<__uint128_t>(const size_t onecount) noexcept
-            {
+            __attribute__((pure)) constexpr __uint128_t bitmask<__uint128_t>(const size_t onecount) noexcept {
                 using Tunsigned = __uint128_t;
                 return static_cast<Tunsigned>(-(onecount != 0)) & (static_cast<Tunsigned>(-1) >> ((sizeof(Tunsigned) * 8u) - onecount));
             });
@@ -330,60 +350,51 @@ namespace serdes
         BITCPY_INT128_CONDITIONAL_DEFINE_C(
 
             template <>
-            CONSTEXPR_ABOVE_CPP11 inline __uint128_t big_endian_memcpy(const uint8_t *const data)
-            {
+            CONSTEXPR_ABOVE_CPP11 inline __uint128_t big_endian_memcpy(const uint8_t *const data) {
                 using T2 = uint8_t;
                 return (static_cast<__uint128_t>(big_endian_memcpy<uint64_t, T2>(data)) << 64) | static_cast<__uint128_t>(big_endian_memcpy<uint64_t, T2>(&data[8 / sizeof(T2)]));
             }
 
             template <>
-            CONSTEXPR_ABOVE_CPP11 inline __uint128_t big_endian_memcpy(const uint16_t *const data)
-            {
+            CONSTEXPR_ABOVE_CPP11 inline __uint128_t big_endian_memcpy(const uint16_t *const data) {
                 using T2 = uint16_t;
                 return (static_cast<__uint128_t>(big_endian_memcpy<uint64_t, T2>(data)) << 64) | static_cast<__uint128_t>(big_endian_memcpy<uint64_t, T2>(&data[8 / sizeof(T2)]));
             }
 
             template <>
-            CONSTEXPR_ABOVE_CPP11 inline __uint128_t big_endian_memcpy(const uint32_t *const data)
-            {
+            CONSTEXPR_ABOVE_CPP11 inline __uint128_t big_endian_memcpy(const uint32_t *const data) {
                 using T2 = uint32_t;
                 return (static_cast<__uint128_t>(big_endian_memcpy<uint64_t, T2>(data)) << 64) | static_cast<__uint128_t>(big_endian_memcpy<uint64_t, T2>(&data[8 / sizeof(T2)]));
             }
 
             template <>
-            CONSTEXPR_ABOVE_CPP11 inline __uint128_t big_endian_memcpy(const uint64_t *const data)
-            {
+            CONSTEXPR_ABOVE_CPP11 inline __uint128_t big_endian_memcpy(const uint64_t *const data) {
                 using T2 = uint64_t;
                 return (static_cast<__uint128_t>(big_endian_memcpy<uint64_t, T2>(data)) << 64) | static_cast<__uint128_t>(big_endian_memcpy<uint64_t, T2>(&data[8 / sizeof(T2)]));
             }
 
             template <>
-            CONSTEXPR_ABOVE_CPP11 inline __uint128_t big_endian_memcpy(const __uint128_t *const data)
-            {
+            CONSTEXPR_ABOVE_CPP11 inline __uint128_t big_endian_memcpy(const __uint128_t *const data) {
                 return data[0];
             }
 
             template <>
-            CONSTEXPR_ABOVE_CPP11 inline uint64_t big_endian_memcpy(const __uint128_t *const data)
-            {
+            CONSTEXPR_ABOVE_CPP11 inline uint64_t big_endian_memcpy(const __uint128_t *const data) {
                 return static_cast<uint64_t>(data[0] >> 64);
             }
 
             template <>
-            CONSTEXPR_ABOVE_CPP11 inline uint32_t big_endian_memcpy(const __uint128_t *const data)
-            {
+            CONSTEXPR_ABOVE_CPP11 inline uint32_t big_endian_memcpy(const __uint128_t *const data) {
                 return static_cast<uint32_t>(data[0] >> 96);
             }
 
             template <>
-            CONSTEXPR_ABOVE_CPP11 inline uint16_t big_endian_memcpy(const __uint128_t *const data)
-            {
+            CONSTEXPR_ABOVE_CPP11 inline uint16_t big_endian_memcpy(const __uint128_t *const data) {
                 return static_cast<uint16_t>(data[0] >> 112);
             }
 
             template <>
-            CONSTEXPR_ABOVE_CPP11 inline uint8_t big_endian_memcpy(const __uint128_t *const data)
-            {
+            CONSTEXPR_ABOVE_CPP11 inline uint8_t big_endian_memcpy(const __uint128_t *const data) {
                 return static_cast<uint8_t>(data[0] >> 120);
             }
 

@@ -15,20 +15,21 @@ void nominal_testing()
 
     const test_type ffff_val = ~test_type();
     const test_type check_pattern = static_cast<test_type>(test_pattern & ffff_val);
-    test_bitcpy_insert<test_type>(test_pattern, bits, 0u, {check_pattern, ffff_val, ffff_val, ffff_val});
-    test_bitcpy_insert<test_type>(test_pattern, bits, bits, {ffff_val, check_pattern, ffff_val, ffff_val});
-    test_bitcpy_insert<test_type>(test_pattern, bits, bits * 3u, {ffff_val, ffff_val, ffff_val, check_pattern});
+    test_bitcpy_insert<test_type>(__LINE__, test_pattern, bits, 0u, {check_pattern, ffff_val, ffff_val, ffff_val});
+    test_bitcpy_insert<test_type>(__LINE__, test_pattern, bits, bits, {ffff_val, check_pattern, ffff_val, ffff_val});
+    test_bitcpy_insert<test_type>(__LINE__, test_pattern, bits, bits * 3u, {ffff_val, ffff_val, ffff_val, check_pattern});
 
 #ifdef __SIZEOF_INT128__
     const __uint128_t inv_test_pattern = ~test_pattern;
 #else
     const uint64_t inv_test_pattern = ~test_pattern;
 #endif
+    // THese fail if #undef __SIZEOF_INT128__
     const test_type inv_check_pattern = ~check_pattern;
     test_type z_val = test_type();
-    test_bitcpy_insert<test_type>(inv_test_pattern, bits, 0u, {inv_check_pattern, z_val, z_val, z_val}, z_val);
-    test_bitcpy_insert<test_type>(inv_test_pattern, bits, bits, {z_val, inv_check_pattern, z_val, z_val}, z_val);
-    test_bitcpy_insert<test_type>(inv_test_pattern, bits, bits * 3u, {z_val, z_val, z_val, inv_check_pattern}, z_val);
+    test_bitcpy_insert<test_type>(__LINE__, inv_test_pattern, bits, 0u, {inv_check_pattern, z_val, z_val, z_val}, z_val);
+    test_bitcpy_insert<test_type>(__LINE__, inv_test_pattern, bits, bits, {z_val, inv_check_pattern, z_val, z_val}, z_val);
+    test_bitcpy_insert<test_type>(__LINE__, inv_test_pattern, bits, bits * 3u, {z_val, z_val, z_val, inv_check_pattern}, z_val);
 }
 
 template <typename test_type>
@@ -54,14 +55,14 @@ void underflow_under_array_boundary_testing()
         match_pattern |= (static_cast<test_type>(test_pattern & 15U) << (bits - right_shift));
         return match_pattern;
     };
-    test_bitcpy_insert<test_type>(test_pattern, 4, 0, {get_match_pattern(0u), ffff_val, ffff_val, ffff_val});
-    test_bitcpy_insert<test_type>(test_pattern, 4, bits - 4, {get_match_pattern(bits - 4), ffff_val, ffff_val, ffff_val});
-    test_bitcpy_insert<test_type>(test_pattern, 4, bits, {ffff_val, get_match_pattern(bits), ffff_val, ffff_val});
-    test_bitcpy_insert<test_type>(test_pattern, 4, bits + 1, {ffff_val, get_match_pattern(bits + 1), ffff_val, ffff_val});
-    test_bitcpy_insert<test_type>(test_pattern, 4, bits + 3, {ffff_val, get_match_pattern(bits + 3), ffff_val, ffff_val});
-    test_bitcpy_insert<test_type>(test_pattern, 4, bits * 3, {ffff_val, ffff_val, ffff_val, get_match_pattern(bits * 3)});
-    test_bitcpy_insert<test_type>(test_pattern, 4, bits * 3 + 3, {ffff_val, ffff_val, ffff_val, get_match_pattern(bits * 3 + 3)});
-    test_bitcpy_insert<test_type>(test_pattern, 4, bits * 4 - 4, {ffff_val, ffff_val, ffff_val, get_match_pattern(bits * 4 - 4)});
+    test_bitcpy_insert<test_type>(__LINE__, test_pattern, 4, 0, {get_match_pattern(0u), ffff_val, ffff_val, ffff_val});
+    test_bitcpy_insert<test_type>(__LINE__, test_pattern, 4, bits - 4, {get_match_pattern(bits - 4), ffff_val, ffff_val, ffff_val});
+    test_bitcpy_insert<test_type>(__LINE__, test_pattern, 4, bits, {ffff_val, get_match_pattern(bits), ffff_val, ffff_val});
+    test_bitcpy_insert<test_type>(__LINE__, test_pattern, 4, bits + 1, {ffff_val, get_match_pattern(bits + 1), ffff_val, ffff_val});
+    test_bitcpy_insert<test_type>(__LINE__, test_pattern, 4, bits + 3, {ffff_val, get_match_pattern(bits + 3), ffff_val, ffff_val});
+    test_bitcpy_insert<test_type>(__LINE__, test_pattern, 4, bits * 3, {ffff_val, ffff_val, ffff_val, get_match_pattern(bits * 3)});
+    test_bitcpy_insert<test_type>(__LINE__, test_pattern, 4, bits * 3 + 3, {ffff_val, ffff_val, ffff_val, get_match_pattern(bits * 3 + 3)});
+    test_bitcpy_insert<test_type>(__LINE__, test_pattern, 4, bits * 4 - 4, {ffff_val, ffff_val, ffff_val, get_match_pattern(bits * 4 - 4)});
 }
 
 template <typename test_type>
@@ -77,8 +78,10 @@ void underflow_over_array_boundary_testing()
     for (size_t shift_val = 1; shift_val < 6; shift_val++)
     {
         test_type l_pattern = (ff_val << shift_val) | (static_cast<test_type>(test_pattern & 31U) >> (bit_size - shift_val));
-        test_type r_pattern = (ff_val >> (bit_size - shift_val)) | (static_cast<test_type>(test_pattern & 31U) << (sizeof(test_type) * 8 + shift_val - bit_size));
-        test_bitcpy_insert<test_type>(test_pattern, bit_size, sizeof(test_type) * 8 * 2 - shift_val, {ff_val, l_pattern, r_pattern, ff_val});
+        test_type r_pattern = (ff_val >> (bit_size - shift_val));
+        if (shift_val - bit_size > 0) // on ARM platforms left bitshifts on 128 bit types of 128 bits fail, so this check is needed for that case, to calculate the correct expected pattern
+            r_pattern |= (static_cast<test_type>(test_pattern & 31U) << (sizeof(test_type) * 8 + shift_val - bit_size));
+        test_bitcpy_insert<test_type>(__LINE__, test_pattern, bit_size, sizeof(test_type) * 8 * 2 - shift_val, {ff_val, l_pattern, r_pattern, ff_val});
     }
 }
 static void overflow_over_array_boundary_testing()
@@ -90,8 +93,8 @@ static void overflow_over_array_boundary_testing()
             test_type ffff_val = ~test_type();
             __uint128_t test_pattern = 0xABCD012345678901llu;
             test_pattern = (test_pattern << 64) | 0x2233445566778890llu;
-            test_bitcpy_insert<test_type, false>(test_pattern, bit_size, 4, {ffff_val << 124 | test_pattern >> 4, ffff_val >> 4, ffff_val, ffff_val});
-            test_bitcpy_insert<test_type, false>(test_pattern, bit_size, 128, {ffff_val, test_pattern, ffff_val, ffff_val});
+            test_bitcpy_insert<test_type, false>(__LINE__, test_pattern, bit_size, 4, {ffff_val << 124 | test_pattern >> 4, ffff_val >> 4, ffff_val, ffff_val});
+            test_bitcpy_insert<test_type, false>(__LINE__, test_pattern, bit_size, 128, {ffff_val, test_pattern, ffff_val, ffff_val});
         });
 
 #ifdef __SIZEOF_INT128__
@@ -103,28 +106,29 @@ static void overflow_over_array_boundary_testing()
 
     size_t bit_size = sizeof(test_pattern) * 8;
 #ifdef __SIZEOF_INT128__
-    test_bitcpy_insert<uint8_t, false>(test_pattern, bit_size, 4u, {0xFA_u8, 0xBC_u8, 0xD0_u8, 0x12_u8, 0x34_u8, 0x56_u8, 0x78_u8, 0x90_u8, 0x12_u8, 0x23_u8, 0x34_u8, 0x45_u8, 0x56_u8, 0x67_u8, 0x78_u8, 0x89_u8, 0x0F_u8, 0xFF_u8});
-    test_bitcpy_insert<uint16_t, false>(test_pattern, bit_size, 4u, {0xFABC_u16, 0xD012_u16, 0x3456_u16, 0x7890_u16, 0x1223_u16, 0x3445_u16, 0x5667_u16, 0x7889_u16, 0x0FFF_u16});
-    test_bitcpy_insert<uint32_t, false>(test_pattern, bit_size, 4u, {0xFABCD012_u32, 0x34567890_u32, 0x12233445_u32, 0x56677889_u32, 0x0FFFFFFF_u32});
-    test_bitcpy_insert<uint64_t, false>(test_pattern, bit_size, 4u, {0xFABCD01234567890_u64, 0x1223344556677889_u64, 0x0FFFFFFFFFFFFFFF_u64});
+    test_bitcpy_insert<uint8_t, false>(__LINE__, test_pattern, bit_size, 4u, {0xFA_u8, 0xBC_u8, 0xD0_u8, 0x12_u8, 0x34_u8, 0x56_u8, 0x78_u8, 0x90_u8, 0x12_u8, 0x23_u8, 0x34_u8, 0x45_u8, 0x56_u8, 0x67_u8, 0x78_u8, 0x89_u8, 0x0F_u8, 0xFF_u8});
+    test_bitcpy_insert<uint16_t, false>(__LINE__, test_pattern, bit_size, 4u, {0xFABC_u16, 0xD012_u16, 0x3456_u16, 0x7890_u16, 0x1223_u16, 0x3445_u16, 0x5667_u16, 0x7889_u16, 0x0FFF_u16});
+    test_bitcpy_insert<uint32_t, false>(__LINE__, test_pattern, bit_size, 4u, {0xFABCD012_u32, 0x34567890_u32, 0x12233445_u32, 0x56677889_u32, 0x0FFFFFFF_u32});
+    test_bitcpy_insert<uint64_t, false>(__LINE__, test_pattern, bit_size, 4u, {0xFABCD01234567890_u64, 0x1223344556677889_u64, 0x0FFFFFFFFFFFFFFF_u64});
     test_bitcpy_insert<__uint128_t, false>(
+        __LINE__,
         test_pattern, bit_size, 4u,
         {static_cast<__uint128_t>(0xFABCD01234567890) << 64 | static_cast<__uint128_t>(0x1223344556677889),
          static_cast<__uint128_t>(0x0FFFFFFFFFFFFFFF) << 64 | static_cast<__uint128_t>(0xFFFFFFFFFFFFFFFF)});
 #else
-    test_bitcpy_insert<uint8_t, false>(test_pattern, bit_size, 4u, {0xFA_u8, 0xBC_u8, 0xD0_u8, 0x12_u8, 0x34_u8, 0x56_u8, 0x78_u8, 0x90_u8, 0x1F_u8, 0xFF_u8});
-    test_bitcpy_insert<uint16_t, false>(test_pattern, bit_size, 4u, {0xFABC_u16, 0xD012_u16, 0x3456_u16, 0x7890_u16, 0x1FFF_u16, 0xFFFF_u16});
-    test_bitcpy_insert<uint32_t, false>(test_pattern, bit_size, 4u, {0xFABCD012_u32, 0x34567890_u32, 0x1FFFFFFF_u32, 0xFFFFFFFF_u32});
-    test_bitcpy_insert<uint64_t, false>(test_pattern, bit_size, 4u, {0xFABCD01234567890_u64, 0x1FFFFFFFFFFFFFFF_u64, 0xFFFFFFFFFFFFFFFF_u64});
+    test_bitcpy_insert<uint8_t, false>(__LINE__, test_pattern, bit_size, 4u, {0xFA_u8, 0xBC_u8, 0xD0_u8, 0x12_u8, 0x34_u8, 0x56_u8, 0x78_u8, 0x90_u8, 0x1F_u8, 0xFF_u8});
+    test_bitcpy_insert<uint16_t, false>(__LINE__, test_pattern, bit_size, 4u, {0xFABC_u16, 0xD012_u16, 0x3456_u16, 0x7890_u16, 0x1FFF_u16, 0xFFFF_u16});
+    test_bitcpy_insert<uint32_t, false>(__LINE__, test_pattern, bit_size, 4u, {0xFABCD012_u32, 0x34567890_u32, 0x1FFFFFFF_u32, 0xFFFFFFFF_u32});
+    test_bitcpy_insert<uint64_t, false>(__LINE__, test_pattern, bit_size, 4u, {0xFABCD01234567890_u64, 0x1FFFFFFFFFFFFFFF_u64, 0xFFFFFFFFFFFFFFFF_u64});
 #endif
 }
 
 static void test_to_array_booleans()
 {
-    test_bitcpy_insert<uint8_t>(true, 4_u8, 1_u8, {8_u8, 0_u8, 0_u8}, 0_u8);
-    test_bitcpy_insert<uint8_t>(false, 4_u8, 1_u8, {135_u8, 0xff_u8, 0xff_u8});
-    test_bitcpy_insert<uint8_t>(true, 4_u8, 6_u8, {0_u8, 64_u8, 0_u8}, 0_u8);
-    test_bitcpy_insert<uint8_t>(false, 4_u8, 6_u8, {252_u8, 63_u8, 0xff_u8});
+    test_bitcpy_insert<uint8_t>(__LINE__, true, 4_u8, 1_u8, {8_u8, 0_u8, 0_u8}, 0_u8);
+    test_bitcpy_insert<uint8_t>(__LINE__, false, 4_u8, 1_u8, {135_u8, 0xff_u8, 0xff_u8});
+    test_bitcpy_insert<uint8_t>(__LINE__, true, 4_u8, 6_u8, {0_u8, 64_u8, 0_u8}, 0_u8);
+    test_bitcpy_insert<uint8_t>(__LINE__, false, 4_u8, 6_u8, {252_u8, 63_u8, 0xff_u8});
 }
 
 static void test_to_array_enums()
@@ -244,22 +248,22 @@ static void test_to_array_large_types()
             cmp_pattern = (cmp_pattern << 64) | 0x090A0B0C0D0E0F00;
             test_cmp_arrays<__uint128_t, false>(f, {cmp_pattern, cmp_pattern * 0u});
         });
-    { //if (bits == total_bits_T_val)
+    { // if (bits == total_bits_T_val)
         uint8_t buffer[17] = {};
         serdes::bitcpy(serdes::sized_pointer<uint8_t>(buffer), x);
         test_cmp_arrays<uint8_t, false>(buffer, {0x01_u8, 0x02_u8, 0x03_u8, 0x04_u8, 0x05_u8, 0x06_u8, 0x07_u8, 0x08_u8, 0x09_u8, 0x0A_u8, 0x0B_u8, 0x0C_u8, 0x0D_u8, 0x0E_u8, 0x0F_u8, 0x00_u8, 0x00_u8});
     }
-    { //if (bits == total_bits_T_val)
+    { // if (bits == total_bits_T_val)
         uint16_t buffer[9] = {};
         serdes::bitcpy(serdes::sized_pointer<uint16_t>(buffer), x);
         test_cmp_arrays<uint16_t, false>(buffer, {0x0102_u16, 0x0304_u16, 0x0506_u16, 0x0708_u16, 0x090A_u16, 0x0B0C_u16, 0x0D0E_u16, 0x0F00_u16, 0x0000_u16});
     }
-    { //if (bits == total_bits_T_val)
+    { // if (bits == total_bits_T_val)
         uint32_t buffer[5] = {};
         serdes::bitcpy(serdes::sized_pointer<uint32_t>(buffer), x);
         test_cmp_arrays<uint32_t, false>(buffer, {0x01020304_u32, 0x05060708_u32, 0x090A0B0C_u32, 0x0D0E0F00_u32, 0x00000000_u32});
     }
-    { //if (bits == total_bits_T_val)
+    { // if (bits == total_bits_T_val)
         uint32_t buffer[5] = {};
         serdes::bitcpy(serdes::sized_pointer<uint32_t>(buffer), x, 4, sizeof(x) * 8);
         test_cmp_arrays<uint32_t, false>(buffer, {0x00102030_u32, 0x40506070_u32, 0x8090A0B0_u32, 0xC0D0E0F0_u32, 0x00000000_u32});
@@ -274,28 +278,28 @@ static void test_to_array_large_types()
         serdes::bitcpy(serdes::sized_pointer<uint32_t>(buffer), x, 4, sizeof(x) * 8 - 16);
         test_cmp_arrays<uint32_t, false>(buffer, {0x00304050_u32, 0x60708090_u32, 0xA0B0C0D0_u32, 0xE0F00000_u32, 0x00000000_u32});
     }
-    { //if (bits == total_bits_T_val)
+    { // if (bits == total_bits_T_val)
         uint64_t buffer[3] = {};
         serdes::bitcpy(serdes::sized_pointer<uint64_t>(buffer), x);
         test_cmp_arrays<uint64_t, false>(buffer, {0x0102030405060708_u64, 0x090A0B0C0D0E0F00_u64, 0x0000000000000000_u64});
     }
 
-    { //if (bits > total_bits_T_val)
+    { // if (bits > total_bits_T_val)
         uint32_t buffer[5] = {};
         serdes::bitcpy(serdes::sized_pointer<uint32_t>(buffer), x, 0, sizeof(x) * 8 + 32);
         test_cmp_arrays<uint32_t, false>(buffer, {0x00000000_u32, 0x01020304_u32, 0x05060708_u32, 0x090A0B0C_u32, 0x0D0E0F00_u32});
     }
-    { //if (bits > total_bits_T_val)
+    { // if (bits > total_bits_T_val)
         uint32_t buffer[5] = {};
         serdes::bitcpy(serdes::sized_pointer<uint32_t>(buffer), x, 0, sizeof(x) * 8 + 20);
         test_cmp_arrays<uint32_t, false>(buffer, {0x00000010_u32, 0x20304050_u32, 0x60708090_u32, 0xA0B0C0D0_u32, 0xE0F00000_u32});
     }
-    { //if (bits > total_bits_T_val)
+    { // if (bits > total_bits_T_val)
         uint32_t buffer[5] = {};
         serdes::bitcpy(serdes::sized_pointer<uint32_t>(buffer), x, 0, sizeof(x) * 8 + 4);
         test_cmp_arrays<uint32_t, false>(buffer, {0x00102030_u32, 0x40506070_u32, 0x8090A0B0_u32, 0xC0D0E0F0_u32, 0x00000000_u32});
     }
-    { //if (bits > total_bits_T_val)
+    { // if (bits > total_bits_T_val)
         uint8_t buffer[17] = {0xFF, 0xFF};
         serdes::bitcpy(serdes::sized_pointer<uint8_t>(buffer), x, 4, sizeof(x) * 8 + 4);
         test_cmp_arrays<uint8_t, false>(buffer, {0xF0_u8, 0x01_u8, 0x02_u8, 0x03_u8, 0x04_u8, 0x05_u8, 0x06_u8, 0x07_u8, 0x08_u8, 0x09_u8, 0x0A_u8, 0x0B_u8, 0x0C_u8, 0x0D_u8, 0x0E_u8, 0x0F_u8, 0x00_u8});

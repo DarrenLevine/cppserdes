@@ -9,6 +9,7 @@
 #define _BITCPY_FROM_ARRAY_H_
 
 #include "bitcpy_common.h"
+#include <memory>
 
 /// @brief CppSerdes library namespace
 namespace serdes
@@ -141,9 +142,15 @@ namespace serdes
     /// @param    bits: number of bits to copy from
     /// @return   size_t: number of bits coppied
     template <typename T_array, typename T_val, detail::requires_small_non_integral_type<T_val> * = nullptr>
-    CONSTEXPR_ABOVE_CPP11 size_t bitcpy(T_val &dest, const T_array *const source, const size_t bit_offset = 0, const size_t bits = detail::default_bitsize<T_val>::value) noexcept
+    size_t bitcpy(T_val &dest, const T_array *const source, const size_t bit_offset = 0, const size_t bits = detail::default_bitsize<T_val>::value) noexcept
     {
-        return bitcpy(detail::reinterpret_as_unsigned(dest), source, bit_offset, bits);
+        // note: reinterpret_as_unsigned is undefined for non integral types, so a slower memcpy is used instead, since a reinterpret may not always work on some platforms
+        typename detail::unsigned_type_sizeof<sizeof(T_val)>::type dest_copy;
+        const size_t result_size = bitcpy(dest_copy, source, bit_offset, bits);
+        if (result_size == 0u)
+            return 0u;
+        memcpy(&dest, &dest_copy, sizeof(T_val));
+        return result_size;
     }
 
     /// @brief [[deserialize, signed destination]] copies the specified number of bits from an array into a
@@ -275,9 +282,15 @@ namespace serdes
     namespace detail
     {
         template <typename T_array, typename T_val>
-        CONSTEXPR_ABOVE_CPP11 size_t bitcpy_disambiguous_pointer_from_array(T_val &dest, const T_array *const source, const size_t bit_offset = 0, const size_t bits = detail::default_bitsize<T_val>::value) noexcept
+        size_t bitcpy_disambiguous_pointer_from_array(T_val &dest, const T_array *const source, const size_t bit_offset = 0, const size_t bits = detail::default_bitsize<T_val>::value) noexcept
         {
-            return bitcpy(detail::reinterpret_as_unsigned(dest), source, bit_offset, bits);
+            // note: reinterpret_as_unsigned is undefined for non integral types, so a slower memcpy is used instead, since a reinterpret may not always work on some platforms
+            typename detail::unsigned_type_sizeof<sizeof(T_val)>::type dest_copy;
+            const size_t result_size = bitcpy(dest_copy, source, bit_offset, bits);
+            if (result_size == 0u)
+                return 0u;
+            memcpy(&dest, &dest_copy, sizeof(T_val));
+            return result_size;
         }
     }
 
@@ -293,7 +306,7 @@ namespace serdes
     /// @param    bits: number of bits to copy from
     /// @return   size_t: number of bits coppied
     template <typename T_array = void, typename T_val = void, detail::requires_pointer_type<T_val> * = nullptr>
-    CONSTEXPR_ABOVE_CPP11 size_t bitcpy(T_val &dest, const sized_pointer<T_array> source, const size_t bit_offset = 0, const size_t bits = detail::default_bitsize<T_val>::value) noexcept
+    size_t bitcpy(T_val &dest, const sized_pointer<T_array> source, const size_t bit_offset = 0, const size_t bits = detail::default_bitsize<T_val>::value) noexcept
     {
         if (source.bit_capacity() < (bits + bit_offset))
             return 0;

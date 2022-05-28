@@ -69,13 +69,13 @@ clang: test
 .PHONY: clang
 
 # runs all unit tests and generates gcov coverage reports
-test_gcov:
+test_gcov: clean
 	@echo "compiling ..." && \
-	$(CXX) $(srcs) $(CPP_STANDARD) -O0 --coverage -fno-inline -fno-inline-small-functions -fno-default-inline -fprofile-arcs -ftest-coverage $(LOTS_OF_WARNINGS) -o $(prog_name) && \
+	$(CXX) $(srcs) $(CPP_STANDARD) -O3 --coverage -fprofile-arcs -ftest-coverage $(LOTS_OF_WARNINGS) -o $(prog_name) && \
 	echo "running ..." && \
 	./$(prog_name) && \
 	echo "" && \
-	gcov $(srcs) && \
+	find . -name '*.gcno' | xargs gcov -rm && \
 	rm -f $(prog_name) *.gcda *.gcno
 .PHONY : test_gcov
 
@@ -93,7 +93,7 @@ endif
 clean:
 	rm -f $(prog_name) *.gcda *.gcno *.gcov && \
 	cd ../ && \
-	rm -r docs
+	rm -rf docs
 .PHONY : clean
 
 doxygen_dependencies = \

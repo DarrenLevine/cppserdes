@@ -16,7 +16,7 @@
 * Custom formatter types, such as optional validation checks, attached right to a field.
 * Virtual fields, and pure virtual fields, allowing you to easily change formats at runtime.
 * Header only, and works with C++11 and greater.
-* "constexpr" support for C++14 or greater using bitcpy function.
+* "constexpr" support for C++14 or greater using bitcpy function (depends on compiler support).
 * Compiles with high warning levels (pedantic, Wall, etc.).
 
 ## Documentation
@@ -103,6 +103,7 @@ int main() {
 ## Known Limitations
 
 * Little endian "serialization" is not yet supported (Note: little and big endian "platforms" ARE both supported)
+* Constexpr bitcpy of enums and floating point types is not supported since the constexpr intepretation of their memory is undefined behaviour (i.e. non-constexpr memcpy must be used behind the scenes)
 * Cannot bitcpy more than 0.25GB of data in a single function call (due to a memory-usage/speed design decision)
 * The examples are written using C++17 syntax for succinctness and simplicity, so if you're using an older compiler, templated fields might need to have their templates explicitly specified, for example:
 

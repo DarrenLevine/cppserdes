@@ -220,25 +220,25 @@ static void test_from_array_large_types()
             serdes::bitcpy(x, serdes::sized_pointer<__uint128_t>(f));
             test_cmp_arrays<uint8_t, false>(x.value, {0x00_u8, 0x00_u8, 0x00_u8, 0x00_u8, 0x00_u8, 0x00_u8, 0x00_u8, 0x00_u8, 0x00_u8, 0x00_u8, 0x00_u8, 0x00_u8, 0x00_u8, 0xFF_u8, 0x50_u8});
         });
-    { //if (bits == total_bits_T_val)
+    { // if (bits == total_bits_T_val)
         uint8_t buffer[17] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x00, 0x00};
         large_class x;
         serdes::bitcpy(x, serdes::sized_pointer<uint8_t>(buffer));
         test_cmp_arrays<uint8_t, false>(x.value, {0x01_u8, 0x02_u8, 0x03_u8, 0x04_u8, 0x05_u8, 0x06_u8, 0x07_u8, 0x08_u8, 0x09_u8, 0x0A_u8, 0x0B_u8, 0x0C_u8, 0x0D_u8, 0x0E_u8, 0x0F_u8});
     }
-    { //if (bits == total_bits_T_val)
+    { // if (bits == total_bits_T_val)
         large_class x;
         uint16_t buffer[9] = {0x0102, 0x0304, 0x0506, 0x0708, 0x090A, 0x0B0C, 0x0D0E, 0x0F00, 0x0000};
         serdes::bitcpy(x, serdes::sized_pointer<uint16_t>(buffer));
         test_cmp_arrays<uint8_t, false>(x.value, {0x01_u8, 0x02_u8, 0x03_u8, 0x04_u8, 0x05_u8, 0x06_u8, 0x07_u8, 0x08_u8, 0x09_u8, 0x0A_u8, 0x0B_u8, 0x0C_u8, 0x0D_u8, 0x0E_u8, 0x0F_u8});
     }
-    { //if (bits == total_bits_T_val)
+    { // if (bits == total_bits_T_val)
         large_class x;
         uint32_t buffer[5] = {0x01020304, 0x05060708, 0x090A0B0C, 0x0D0E0F00, 0};
         serdes::bitcpy(x, serdes::sized_pointer<uint32_t>(buffer));
         test_cmp_arrays<uint8_t, false>(x.value, {0x01_u8, 0x02_u8, 0x03_u8, 0x04_u8, 0x05_u8, 0x06_u8, 0x07_u8, 0x08_u8, 0x09_u8, 0x0A_u8, 0x0B_u8, 0x0C_u8, 0x0D_u8, 0x0E_u8, 0x0F_u8});
     }
-    { //if (bits == total_bits_T_val)
+    { // if (bits == total_bits_T_val)
         large_class x;
         uint32_t buffer[5] = {0x00102030, 0x40506070, 0x8090A0B0, 0xC0D0E0F0, 0x00000000};
         serdes::bitcpy(x, serdes::sized_pointer<uint32_t>(buffer), 4, sizeof(x) * 8);
@@ -256,32 +256,32 @@ static void test_from_array_large_types()
         serdes::bitcpy(x, serdes::sized_pointer<uint32_t>(buffer), 4, sizeof(x) * 8 - 16);
         test_cmp_arrays<uint8_t, false>(x.value, {0x00_u8, 0x00_u8, 0xA1_u8, 0x02_u8, 0x03_u8, 0x04_u8, 0x05_u8, 0x06_u8, 0x07_u8, 0x08_u8, 0x09_u8, 0x0A_u8, 0x0B_u8, 0x0C_u8, 0x1D_u8});
     }
-    { //if (bits == total_bits_T_val)
+    { // if (bits == total_bits_T_val)
         large_class x;
         uint64_t buffer[3] = {0xFA10203040506070, 0x8090A0B0C1D2E3F4, 0x11324458D1EF5324};
         serdes::bitcpy(x, serdes::sized_pointer<uint64_t>(buffer));
         test_cmp_arrays<uint8_t, false>(x.value, {0xFA_u8, 0x10_u8, 0x20_u8, 0x30_u8, 0x40_u8, 0x50_u8, 0x60_u8, 0x70_u8, 0x80_u8, 0x90_u8, 0xA0_u8, 0xB0_u8, 0xC1_u8, 0xD2_u8, 0xE3_u8});
     }
 
-    { //if (bits > total_bits_T_val)
+    { // if (bits > total_bits_T_val)
         large_class x;
         uint32_t buffer[5] = {0xFA102030, 0x40506070, 0x8090A0B0, 0xC1D2E3F4, 0x11324458};
         serdes::bitcpy(x, serdes::sized_pointer<uint32_t>(buffer), 0, sizeof(x) * 8 + 32);
         test_cmp_arrays<uint8_t, false>(x.value, {0x40_u8, 0x50_u8, 0x60_u8, 0x70_u8, 0x80_u8, 0x90_u8, 0xA0_u8, 0xB0_u8, 0xC1_u8, 0xD2_u8, 0xE3_u8, 0xF4_u8, 0x11_u8, 0x32_u8, 0x44_u8});
     }
-    { //if (bits > total_bits_T_val)
+    { // if (bits > total_bits_T_val)
         large_class x;
         uint32_t buffer[5] = {0xFA162D3E, 0x42506070, 0x8090A0B0, 0xC1D2E3F4, 0x11324458};
         serdes::bitcpy(x, serdes::sized_pointer<uint32_t>(buffer), 0, sizeof(x) * 8 + 20);
         test_cmp_arrays<uint8_t, false>(x.value, {0xD3_u8, 0xE4_u8, 0x25_u8, 0x06_u8, 0x07_u8, 0x08_u8, 0x09_u8, 0x0A_u8, 0x0B_u8, 0x0C_u8, 0x1D_u8, 0x2E_u8, 0x3F_u8, 0x41_u8, 0x13_u8});
     }
-    { //if (bits > total_bits_T_val)
+    { // if (bits > total_bits_T_val)
         large_class x;
         uint32_t buffer[5] = {0xFA162D3E, 0x42506070, 0x8090A0B0, 0xC1D2E3F4, 0x11324458};
         serdes::bitcpy(x, serdes::sized_pointer<uint32_t>(buffer), 0, sizeof(x) * 8 + 4);
         test_cmp_arrays<uint8_t, false>(x.value, {0xA1_u8, 0x62_u8, 0xD3_u8, 0xE4_u8, 0x25_u8, 0x06_u8, 0x07_u8, 0x08_u8, 0x09_u8, 0x0A_u8, 0x0B_u8, 0x0C_u8, 0x1D_u8, 0x2E_u8, 0x3F_u8});
     }
-    { //if (bits > total_bits_T_val)
+    { // if (bits > total_bits_T_val)
         large_class x;
         uint8_t buffer[17] = {0xFE, 0xB2, 0xA3, 0xE4, 0xF5, 0x16, 0x27, 0x38, 0x049, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x00, 0x00};
         serdes::bitcpy(x, serdes::sized_pointer<uint8_t>(buffer), 4, sizeof(x) * 8 + 8);

@@ -217,7 +217,7 @@ namespace serdes
     /// @param    bits: number of bits to copy from
     /// @return   size_t: number of bits coppied
     template <typename T_array, typename T_val, detail::requires_large_non_integral_type<T_val> * = nullptr>
-    CONSTEXPR_ABOVE_CPP11 size_t bitcpy(T_array *const dest, const T_val &source, const size_t bit_offset = 0, const size_t bits = detail::default_bitsize<T_val>::value) noexcept
+    CONSTEXPR_ABOVE_CPP11_AND_NON_LITERAL_STORAGE size_t bitcpy(T_array *const dest, const T_val &source, const size_t bit_offset = 0, const size_t bits = detail::default_bitsize<T_val>::value) noexcept
     {
         const sized_pointer<const uint8_t> source_array(reinterpret_cast<const uint8_t *const>(&source), sizeof(T_val));
         return bitcpy(dest, source_array, bit_offset, bits);

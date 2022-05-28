@@ -105,7 +105,7 @@ void test_cmp_arrays(B (&result_array)[N], B(&&expected_array)[N])
 }
 
 template <typename B, bool bin_print = true, typename T = void, size_t N = 0>
-void test_bitcpy_insert(T inserted_value, size_t bits, size_t bit_offset, B(&&expected_array)[N], B init = ~B())
+void test_bitcpy_insert(int line_num, T inserted_value, size_t bits, size_t bit_offset, B(&&expected_array)[N], B init = ~B())
 {
     B result_array[N];
     for (size_t i = 0; i < N; i++)
@@ -116,7 +116,7 @@ void test_bitcpy_insert(T inserted_value, size_t bits, size_t bit_offset, B(&&ex
         passed &= result_array[i] == expected_array[i];
     if (!passed)
     {
-        printf("FAILED. inserted = ");
+        printf("line %i FAILED bits=%zu bit_offset=%zu. inserted = ", line_num, bits, bit_offset);
         if (bin_print)
             serdes::printbin(inserted_value);
         else
@@ -138,8 +138,7 @@ void test_bitcpy_insert(T inserted_value, size_t bits, size_t bit_offset, B(&&ex
 }
 
 BITCPY_INT128_CONDITIONAL_DEFINE_C(
-    inline __uint128_t form_uint128_t(uint64_t x, uint64_t y)
-    {
+    inline __uint128_t form_uint128_t(uint64_t x, uint64_t y) {
         return (static_cast<__uint128_t>(x) << 64) | static_cast<__uint128_t>(y);
     });
 
