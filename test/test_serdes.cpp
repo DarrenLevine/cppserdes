@@ -466,6 +466,40 @@ static void test_error_catching()
         ASSERT_EQUALS(static_cast<int>(load_status.status), static_cast<int>(serdes::status_e::NO_LOAD_TO_RVALUE));
         ASSERT_EQUALS(load_status.bit_offset, 0);
     }
+    {
+        // nullptr catches
+        uint8_t *null_data = nullptr;
+        uint16_t *null_serial_data = nullptr;
+
+        int value = 1;
+        auto load_status = (serdes::packet(null_data, 100) >> value);
+        ASSERT_EQUALS(static_cast<int>(load_status.status), static_cast<int>(serdes::status_e::EXCEEDED_SERIAL_SIZE));
+        ASSERT_EQUALS(load_status.bit_offset, 0);
+
+        auto store_status = (serdes::packet(null_data, 100) << value);
+        ASSERT_EQUALS(static_cast<int>(store_status.status), static_cast<int>(serdes::status_e::EXCEEDED_SERIAL_SIZE));
+        ASSERT_EQUALS(store_status.bit_offset, 0);
+
+        coordinates A;
+
+        // confirming the error is caught on loads
+        auto load_result = A.load(null_serial_data);
+        ASSERT_EQUALS(static_cast<int>(load_result.status), static_cast<int>(serdes::status_e::EXCEEDED_SERIAL_SIZE));
+        ASSERT_EQUALS(load_result.bits, 0);
+
+        load_result = A.load(null_serial_data, 100);
+        ASSERT_EQUALS(static_cast<int>(load_result.status), static_cast<int>(serdes::status_e::EXCEEDED_SERIAL_SIZE));
+        ASSERT_EQUALS(load_result.bits, 0);
+
+        // confirming the error is caught on stores
+        auto store_result = A.store(null_serial_data);
+        ASSERT_EQUALS(static_cast<int>(store_result.status), static_cast<int>(serdes::status_e::EXCEEDED_SERIAL_SIZE));
+        ASSERT_EQUALS(store_result.bits, 0);
+
+        store_result = A.store(null_serial_data, 100);
+        ASSERT_EQUALS(static_cast<int>(store_result.status), static_cast<int>(serdes::status_e::EXCEEDED_SERIAL_SIZE));
+        ASSERT_EQUALS(store_result.bits, 0);
+    }
 }
 
 static void test_formatter_lambdas()

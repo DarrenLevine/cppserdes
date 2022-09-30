@@ -27,7 +27,7 @@ namespace serdes
         /// @brief Construct a new sized pointer object from a raw pointer and a passed size
         /// @param    v : raw pointer to the head of the array
         /// @param    N : size of the array
-        sized_pointer(T_array *const v, const size_t N) noexcept : value{v}, size{N} {}
+        sized_pointer(T_array *const v, const size_t N) noexcept : value{v}, size{N * static_cast<size_t>(v != nullptr)} {}
 
         /// @brief Construct a new sized pointer object from the array itself
         /// @tparam   N : size of the array
@@ -61,7 +61,7 @@ namespace serdes
         /// @param    v: pointer to the head of the array
         /// @param    N: size of the array
         template <typename T>
-        sized_pointer(T *const v, const size_t N) noexcept : value{const_cast<void *const>(reinterpret_cast<volatile const void *const>(v))}, size{N}, element_size{sizeof(T)} {}
+        sized_pointer(T *const v, const size_t N) noexcept : value{const_cast<void *const>(reinterpret_cast<volatile const void *const>(v))}, size{N * static_cast<size_t>(v != nullptr)}, element_size{sizeof(T)} {}
 
         /// @brief Construct a new sized pointer object from the array itself
         /// @tparam   T: original type of pointer
