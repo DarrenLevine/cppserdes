@@ -136,7 +136,7 @@ namespace serdes
             detail::has_data_and_size<typename detail::remove_cvref_cpp11<T>::type>::value &&
             !detail::has_custom_type_override<typename detail::remove_cvref_cpp11<T>::type>::value
             , int *>::type = nullptr>
-        void load(T &&value, size_t bits = detail::default_bitsize<typename std::remove_pointer<decltype(value.data())>::type>::value)
+        void load(T &&value, size_t bits = detail::default_bitsize<typename detail::has_data_and_size<typename detail::remove_cvref_cpp11<T>::type>::elem_type>::value)
         {
             if (status != status_e::NO_ERROR)
                 return;
@@ -147,7 +147,7 @@ namespace serdes
                     status = status_e::ARRAY_SIZE_OVER_MAX;
                 return;
             }
-            using elem_type = typename std::remove_pointer<decltype(value.data())>::type;
+            using elem_type = typename detail::has_data_and_size<typename detail::remove_cvref_cpp11<T>::type>::elem_type;
             array<elem_type, size_t> temp_arr(&value.data()[0], size, size);
             load(temp_arr, bits);
         }
@@ -664,12 +664,12 @@ namespace serdes
             detail::has_data_and_size<typename detail::remove_cvref_cpp11<T>::type>::value &&
             !detail::has_custom_type_override<typename detail::remove_cvref_cpp11<T>::type>::value
             , int *>::type = nullptr>
-        void store(T &&value, size_t bits = detail::default_bitsize<typename std::remove_pointer<decltype(value.data())>::type>::value)
+        void store(T &&value, size_t bits = detail::default_bitsize<typename detail::has_data_and_size<typename detail::remove_cvref_cpp11<T>::type>::elem_type>::value)
         {
             size_t size = value.size();
             if (size == 0u)
                 return; // nothing to store
-            using elem_type = typename std::remove_pointer<decltype(value.data())>::type;
+            using elem_type = typename detail::has_data_and_size<typename detail::remove_cvref_cpp11<T>::type>::elem_type;
             array<elem_type, size_t> temp_arr(&value.data()[0], size, size);
             store(temp_arr, bits);
         }
