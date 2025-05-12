@@ -7,6 +7,7 @@
 ///   struct status_t;
 ///   enum class mode_e;
 ///   struct formatter;
+///   struct validator;
 ///   struct packet;
 ///   struct packet_base;
 ///
@@ -35,6 +36,8 @@ namespace serdes
     struct status_t;
     enum class mode_e;
     struct formatter;
+    template <typename FieldType, typename FuncType>
+    struct validator;
     struct packet;
 
     /// @brief inheritable base class to allow format recording and application

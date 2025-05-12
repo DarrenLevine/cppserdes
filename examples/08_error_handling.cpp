@@ -18,6 +18,12 @@ struct coordinates : serdes::packet_base
         p.add(x);
         p.add(y, [&]() noexcept
               { return y > 6; }); // an arbitrary validity check function is attached to "y"
+
+        if (p.status == serdes::status_e::INVALID_FIELD)
+        {
+            // you can check for any type of error in the format process
+        }
+
         p.add(z);
         p.add(flags);
 

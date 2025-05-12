@@ -29,7 +29,7 @@ struct obj_with_header_inherited : header_type
     double x = -1.0, y = -2.0, z = 3.14;
     uint32_t pattern = 0xABCD0123;
 
-    void format(serdes::packet &p) override
+    void format(serdes::packet &p) final
     {
         // inherited formats need to be called before or after any surrounding formats like so:
         header_type::format(p);
@@ -44,7 +44,7 @@ struct compound_type : serdes::packet_base
     obj_with_header_inherited beginning_data = {};
     uint16_t ending_data = 0x1234;
 
-    void format(serdes::packet &p) override
+    void format(serdes::packet &p) final
     {
         // since the format is literally nested instead of inherited, it can be added to the format directly
         p + beginning_data + ending_data;
@@ -78,12 +78,12 @@ int main()
     printf("Bits Loaded  = %zu with %s\n", result.bits, serdes::status2str(result.status));
 
     printf("obj_with_header_inherited = {\n");
-    printf("    id = %u\n", object.beginning_data.id);
-    printf("    length = %u\n", object.beginning_data.length);
-    printf("    source = %u\n", object.beginning_data.source);
-    printf("    flags[0] = %u\n", object.beginning_data.flags[0]);
-    printf("    flags[1] = %u\n", object.beginning_data.flags[1]);
-    printf("    flags[2] = %u\n", object.beginning_data.flags[2]);
+    printf("    id = %d\n", object.beginning_data.id);
+    printf("    length = %d\n", object.beginning_data.length);
+    printf("    source = %d\n", object.beginning_data.source);
+    printf("    flags[0] = %d\n", object.beginning_data.flags[0]);
+    printf("    flags[1] = %d\n", object.beginning_data.flags[1]);
+    printf("    flags[2] = %d\n", object.beginning_data.flags[2]);
     printf("    x = %.2f\n", object.beginning_data.x);
     printf("    y = %.2f\n", object.beginning_data.y);
     printf("    z = %.2f\n", object.beginning_data.z);

@@ -24,7 +24,7 @@ namespace serdes
     /// @param    source: pointer to the start of the source serial array
     /// @param    bit_offset: starting bit of the source array to start copying from
     /// @param    bits: number of bits to copy from
-    /// @return   size_t: number of bits coppied
+    /// @return   size_t: number of bits copied
     template <typename T_array, typename T_val, detail::requires_unsigned_type<T_val> * = nullptr>
     CONSTEXPR_ABOVE_CPP11 size_t bitcpy(T_val &dest, const T_array *const source, const size_t bit_offset = 0, const size_t bits = detail::default_bitsize<T_val>::value) noexcept
     {
@@ -112,7 +112,7 @@ namespace serdes
     /// @param    source: pointer to the start of the source serial array
     /// @param    bit_offset: starting bit of the source array to start copying from
     /// @param    bits: number of bits to copy from
-    /// @return   size_t: number of bits coppied
+    /// @return   size_t: number of bits copied
     template <typename T_array, typename T_val, detail::requires_bool_type<T_val> * = nullptr>
     CONSTEXPR_ABOVE_CPP11 size_t bitcpy(T_val &dest, const T_array *const source, const size_t bit_offset = 0, const size_t bits = detail::default_bitsize<T_val>::value) noexcept
     {
@@ -140,16 +140,17 @@ namespace serdes
     /// @param    source: pointer to the start of the source serial array
     /// @param    bit_offset: starting bit of the source array to start copying from
     /// @param    bits: number of bits to copy from
-    /// @return   size_t: number of bits coppied
+    /// @return   size_t: number of bits copied
     template <typename T_array, typename T_val, detail::requires_small_non_integral_type<T_val> * = nullptr>
     size_t bitcpy(T_val &dest, const T_array *const source, const size_t bit_offset = 0, const size_t bits = detail::default_bitsize<T_val>::value) noexcept
     {
-        // note: reinterpret_as_unsigned is undefined for non integral types, so a slower memcpy is used instead, since a reinterpret may not always work on some platforms
-        typename detail::unsigned_type_sizeof<sizeof(T_val)>::type dest_copy;
+        // note: reinterpret_as_unsigned is undefined for non integral types, so a slower std::memcpy is used instead, since a reinterpret is
+        // more likely to not work on some platforms, the configCPP_SERDES_ALLOW_REINTERPRET_BUILTINS_UB option is not provided
+        typename detail::unsigned_type_sizeof<sizeof(T_val)>::type dest_copy{};
         const size_t result_size = bitcpy(dest_copy, source, bit_offset, bits);
         if (result_size == 0u)
             return 0u;
-        memcpy(&dest, &dest_copy, sizeof(T_val));
+        std::memcpy(&dest, &dest_copy, sizeof(T_val));
         return result_size;
     }
 
@@ -162,12 +163,19 @@ namespace serdes
     /// @param    source: pointer to the start of the source serial array
     /// @param    bit_offset: starting bit of the source array to start copying from
     /// @param    bits: number of bits to copy from
-    /// @return   size_t: number of bits coppied
+    /// @return   size_t: number of bits copied
     template <typename T_array, typename T_val, detail::requires_signed_type<T_val> * = nullptr>
     CONSTEXPR_ABOVE_CPP11 size_t bitcpy(T_val &dest, const T_array *const source, const size_t bit_offset = 0, const size_t bits = detail::default_bitsize<T_val>::value) noexcept
     {
+    #ifdef configCPP_SERDES_ALLOW_REINTERPRET_BUILTINS_UB
         bitcpy(detail::reinterpret_as_unsigned(dest), source, bit_offset, bits);
         detail::extend_sign(dest, bits);
+    #else
+        typename detail::unsigned_type_sizeof<sizeof(T_val)>::type dest_copy{};
+        bitcpy(dest_copy, source, bit_offset, bits);
+        std::memcpy(&dest, &dest_copy, sizeof(T_val));
+        detail::extend_sign(dest, bits);
+    #endif
         return bits;
     }
 
@@ -180,7 +188,7 @@ namespace serdes
     /// @param    source: pointer to the start of the source serial array
     /// @param    bit_offset: starting bit of the source array to start copying from
     /// @param    bits: number of bits to copy from
-    /// @return   size_t: number of bits coppied
+    /// @return   size_t: number of bits copied
     template <typename T_array, typename T_val, detail::requires_unsigned_type<T_val> * = nullptr>
     CONSTEXPR_ABOVE_CPP11 size_t bitcpy(sized_pointer<T_val> &dest, const T_array *const source, const size_t bit_offset, const size_t bits) noexcept
     {
@@ -225,7 +233,7 @@ namespace serdes
     /// @param    dest: destination value sized_pointer<T_val> reference
     /// @param    source: pointer to the start of the source serial array
     /// @param    bit_offset: starting bit of the source array to start copying from
-    /// @return   size_t: number of bits coppied
+    /// @return   size_t: number of bits copied
     template <typename T_array, typename T_val, detail::requires_unsigned_type<T_val> * = nullptr>
     CONSTEXPR_ABOVE_CPP11 size_t bitcpy(sized_pointer<T_val> &dest, const T_array *const source, const size_t bit_offset = 0) noexcept
     {
@@ -241,7 +249,7 @@ namespace serdes
     /// @param    source: pointer to the start of the source serial array
     /// @param    bit_offset: starting bit of the source array to start copying from
     /// @param    bits: number of bits to copy from
-    /// @return   size_t: number of bits coppied
+    /// @return   size_t: number of bits copied
     template <typename T_array, typename T_val, detail::requires_large_non_integral_type<T_val> * = nullptr>
 #ifndef __clang__
     CONSTEXPR_ABOVE_CPP11
@@ -262,8 +270,8 @@ namespace serdes
     /// @param    source: pointer to the start of the source serial array
     /// @param    bit_offset: starting bit of the source array to start copying from
     /// @param    bits: number of bits to copy from
-    /// @return   size_t: number of bits coppied
-    template <typename T_array = void, typename T_val = void, detail::requires_not_a_pointer_type<T_val> * = nullptr>
+    /// @return   size_t: number of bits copied
+    template <typename T_array = void, typename T_val = void, detail::requires_not_pointer_or_load_store<T_val> * = nullptr>
     CONSTEXPR_ABOVE_CPP11 size_t bitcpy(T_val &dest, const sized_pointer<T_array> source, size_t bit_offset = 0, const size_t bits = detail::default_bitsize<T_val>::value) noexcept
     {
         if (source.bit_capacity() < (bits + bit_offset))
@@ -272,7 +280,7 @@ namespace serdes
         return bits;
     }
 
-    // either the from_array or the to_array implimentation needs a specialization to de-conflict
+    // either the from_array or the to_array implementation needs a specialization to de-conflict
     // pointer to pointer transfers the from_array was arbitrarily picked, the result is that for
     // the ambiguous case, they can either casting to a uintptr_t. Or they can use sized_pointer
     // to indicate the array object, like so:
@@ -284,12 +292,13 @@ namespace serdes
         template <typename T_array, typename T_val>
         size_t bitcpy_disambiguous_pointer_from_array(T_val &dest, const T_array *const source, const size_t bit_offset = 0, const size_t bits = detail::default_bitsize<T_val>::value) noexcept
         {
-            // note: reinterpret_as_unsigned is undefined for non integral types, so a slower memcpy is used instead, since a reinterpret may not always work on some platforms
-            typename detail::unsigned_type_sizeof<sizeof(T_val)>::type dest_copy;
+            // note: reinterpret_as_unsigned is undefined for non integral types, so a slower std::memcpy is used instead, since a reinterpret is
+            // more likely to not work on some platforms, the configCPP_SERDES_ALLOW_REINTERPRET_BUILTINS_UB option is not provided
+            typename detail::unsigned_type_sizeof<sizeof(T_val)>::type dest_copy{};
             const size_t result_size = bitcpy(dest_copy, source, bit_offset, bits);
             if (result_size == 0u)
                 return 0u;
-            memcpy(&dest, &dest_copy, sizeof(T_val));
+            std::memcpy(&dest, &dest_copy, sizeof(T_val));
             return result_size;
         }
     }
@@ -304,7 +313,7 @@ namespace serdes
     /// @param    source: pointer to the start of the source serial array
     /// @param    bit_offset: starting bit of the source array to start copying from
     /// @param    bits: number of bits to copy from
-    /// @return   size_t: number of bits coppied
+    /// @return   size_t: number of bits copied
     template <typename T_array = void, typename T_val = void, detail::requires_pointer_type<T_val> * = nullptr>
     size_t bitcpy(T_val &dest, const sized_pointer<T_array> source, const size_t bit_offset = 0, const size_t bits = detail::default_bitsize<T_val>::value) noexcept
     {
@@ -313,18 +322,20 @@ namespace serdes
         return detail::bitcpy_disambiguous_pointer_from_array(dest, source.value, bit_offset, bits);
     }
 
-    /// @brief [[deserialize, atomic dest]] copies the specified number of bits from an array
-    /// into an atomic value
+    /// @brief [[deserialize, store() dest]] copies the specified number of bits from an array into a
+    /// wrapped type with a "store()" method (such as std::atomic)
+    /// - only if method already has a "format(packet&)" method
     ///
     /// @tparam   T_array: serial array base type
-    /// @tparam   T_val: destination value type
+    /// @tparam   T_val: destination wrapped value type
+    /// @tparam   T_wrap: destination wrapper class type
     /// @param    dest: destination value reference
     /// @param    source: pointer to the start of the source serial array
     /// @param    bit_offset: starting bit of the source array to start copying from
     /// @param    bits: number of bits to copy from
-    /// @return   size_t: number of bits coppied
-    template <typename T_array, typename T_val>
-    size_t bitcpy(std::atomic<T_val> &dest, const T_array *const source, const size_t bit_offset = 0, const size_t bits = detail::default_bitsize<T_val>::value) noexcept
+    /// @return   size_t: number of bits copied
+    template <typename T_array, typename T_val, template<typename> class T_wrap, detail::requires_load_and_store_of_builtin<T_wrap<T_val>> * = nullptr>
+    size_t bitcpy(T_wrap<T_val> &dest, const T_array *const source, const size_t bit_offset = 0, const size_t bits = detail::default_bitsize<T_val>::value) noexcept
     {
         T_val temp_value = 0;
         const size_t bits_written = bitcpy(temp_value, source, bit_offset, bits);
@@ -342,7 +353,7 @@ namespace serdes
     /// @param    source: pointer to the start of the source serial array
     /// @param    bit_offset: starting bit of the source array to start copying from
     /// @param    bits: number of bits to copy from
-    /// @return   size_t: number of bits coppied
+    /// @return   size_t: number of bits copied
     template <typename T_val = void>
     CONSTEXPR_ABOVE_CPP11 size_t bitcpy(T_val &dest, const sized_pointer<void> &source, const size_t bit_offset = 0, const size_t bits = detail::default_bitsize<T_val>::value) noexcept
     {

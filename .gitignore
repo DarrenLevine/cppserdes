@@ -46,4 +46,5 @@ CMakeCache.txt
 
 # misc
 temp.*
+temp/
 .vscode

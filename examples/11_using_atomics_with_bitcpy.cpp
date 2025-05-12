@@ -1,5 +1,12 @@
 /// @example 11_using_atomics_with_bitcpy.cpp
 /// @brief This example demonstrates how to serialize/deserialize data atomically
+///
+/// NOTE: Serialization/Deserialization will work out-of-the-box on any wrapper class
+///       with a 'T load() const' and 'void store(T)' method, not just "std::atomic"
+///       but also any custom classes. The load()/store() methods will be automatically
+///       detected and called appropriately. This means that #include "serdes.h" does
+///       not also pull in #include <atomic> or any other compatible types even though
+///       they are still supported - you'll only get what you use.
 
 #include "../include/serdes.h"
 #include <stdio.h>

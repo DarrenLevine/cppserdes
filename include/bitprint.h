@@ -185,6 +185,26 @@ namespace serdes
         bitprint_detail::print_bracket_newline<use_brackets>(add_newline);
     }
 
+    /// @brief prints an array in hex format
+    /// @tparam   use_brackets: if true, curly brackets will surround the printed statement
+    /// @param    data: c-array to print
+    /// @param    size: number of elements to print
+    /// @param    add_newline: if true, a newline will be added to the end
+    template <bool use_brackets = true, typename T = void, size_t N = 0u>
+    void printhex(const T (&data)[N], size_t size, const bool add_newline = true)
+    {
+        if (use_brackets)
+            printf("{");
+        if (size > N)
+            size = N;
+        for (size_t i = 0; i < size; i++)
+        {
+            printhex(data[i], false);
+            printf("%s", (i + 1u < size ? ", " : ""));
+        }
+        bitprint_detail::print_bracket_newline<use_brackets>(add_newline);
+    }
+
     /// @brief prints an array in binary format
     /// @tparam   use_brackets: if true, curly brackets will surround the printed statement
     /// @param    data: value to print

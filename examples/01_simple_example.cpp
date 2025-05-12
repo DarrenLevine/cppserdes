@@ -21,5 +21,5 @@ int main()
     serdes::packet(serial_data) >> x >> str >> y >> serdes::bitpack(z, serdes::bit_length(6));
 
     // will print out: "recovered data: {x = 0xABCD, str = hello!, y = 123, z = -9}"
-    printf("recovered data: {x = 0x%X, str = \"%s\", y = %i, z = %i}\n\n", x, str, y, z);
+    printf("recovered data: {x = 0x%X, str = \"%s\", y = %i, z = %i}\n\n", static_cast<unsigned int>(x), str, y, z);
 }

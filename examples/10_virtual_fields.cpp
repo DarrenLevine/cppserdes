@@ -34,7 +34,7 @@ struct voltage_command : packet_format
     struct payload_t : serdes::packet_base
     {
         uint32_t voltage = 0;
-        void format(serdes::packet &p) override
+        void format(serdes::packet &p) final
         {
             p + voltage;
         }

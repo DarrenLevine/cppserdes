@@ -5,10 +5,10 @@
 #include "../include/serdes.h"
 #include <stdio.h>
 
-struct coordinates : serdes::packet_base
+struct coordinates final : serdes::packet_base
 {
     uint8_t x = 0xAB, y = 0xCD, z = 0xEF;
-    void format(serdes::packet &serdes_obj) override
+    void format(serdes::packet &serdes_obj) final
     {
         serdes_obj + x + y + z;
     }
@@ -20,7 +20,7 @@ struct vector3d : serdes::packet_base
     uint16_t size = 0;
     coordinates values[capacity];
 
-    void format(serdes::packet &serdes_obj) override
+    void format(serdes::packet &serdes_obj) final
     {
         // this format records the size first, and then uses it
         // to decode/encode a max of "capacity" coordinate values

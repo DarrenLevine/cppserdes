@@ -106,7 +106,6 @@ static void test_variable_packet_base_arrays()
 static void test_fixed_sized_arrays()
 {
     {
-        uint8_t length = 3;
         uint8_t array[] = {0xAB, 0xCD, 0xEF, 0x12, 0x23};
         uint16_t serial_data[4] = {};
         serdes::packet(serial_data) << array;
@@ -346,10 +345,10 @@ static void test_bitpacking_and_strings()
 
     ASSERT_EQUALS(serial_data, {0xABCD6865_u32, 0x6C6C6F21_u32, 0x007BDC00_u32, 0x00000000_u32});
 
-    uint16_t x;
-    int8_t y;
+    uint16_t x{};
+    int8_t y{};
     int32_t z{};
-    char str[7];
+    char str[7]{};
 
     // deserialize the data
     serdes::packet(serial_data) >> x >> str >> y >> serdes::bitpack<int32_t, int>(z, serdes::bit_length(6));
@@ -781,7 +780,7 @@ static void test_object_oriented_virtual_formatters()
 
     voltage_command obj2;
     auto result2 = obj2.load(serial_data);
-    ASSERT_EQUALS(static_cast<int>(result.status), static_cast<int>(serdes::status_e::NO_ERROR));
+    ASSERT_EQUALS(static_cast<int>(result2.status), static_cast<int>(serdes::status_e::NO_ERROR));
     ASSERT_EQUALS(obj2.id, 0xAB_u8);
     ASSERT_EQUALS(obj2.payload.voltage, 0x01020304_u32);
     ASSERT_EQUALS(obj2.checksum, 0xCDEF_u16);

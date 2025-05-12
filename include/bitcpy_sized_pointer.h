@@ -50,25 +50,47 @@ namespace serdes
         /// @brief the underlying pointer reinterpreted as a void* type
         void *const value;
 
-        /// @brief size of the array
+        /// @brief size of the array (number of elements in the array)
         const size_t size;
 
         /// @brief Number of bytes per element of the original array type, same as sizeof(T_original)
         const uint_fast8_t element_size;
+
+        /// @brief Construct a new sized pointer object from another sized pointer object
+        /// 
+        /// @tparam   T_array: the array's base element type
+        /// @param    other: the other sized_pointer to duplicate
+        template <typename T_array>
+        sized_pointer(const sized_pointer<T_array> &other) noexcept
+            : sized_pointer(other.value, other.size) {}
+
+        /// @brief Construct a new sized pointer object from a void typed sized pointer
+        /// 
+        /// @param    other: the other sized_pointer to duplicate
+        sized_pointer(const sized_pointer<void> &other) noexcept
+            : value{other.value},
+              size{other.size},
+              element_size{other.element_size} {}
 
         /// @brief Construct a new sized pointer object from a raw pointer and a passed size
         /// @tparam   T: original type of pointer
         /// @param    v: pointer to the head of the array
         /// @param    N: size of the array
         template <typename T>
-        sized_pointer(T *const v, const size_t N) noexcept : value{const_cast<void *const>(reinterpret_cast<volatile const void *const>(v))}, size{N * static_cast<size_t>(v != nullptr)}, element_size{sizeof(T)} {}
+        sized_pointer(T *const v, const size_t N) noexcept
+            : value{const_cast<void *const>(reinterpret_cast<volatile const void *const>(v))},
+              size{N * static_cast<size_t>(v != nullptr)},
+              element_size{sizeof(T)} {}
 
         /// @brief Construct a new sized pointer object from the array itself
         /// @tparam   T: original type of pointer
         /// @tparam   N: size of the array
         /// @param    v: pointer to the head of the array
         template <typename T, size_t N>
-        sized_pointer(T (&v)[N]) noexcept : value{const_cast<void *const>(reinterpret_cast<volatile const void *const>(v))}, size{N}, element_size{sizeof(T)}
+        sized_pointer(T (&v)[N]) noexcept
+            : value{const_cast<void *const>(reinterpret_cast<volatile const void *const>(v))},
+              size{N},
+              element_size{sizeof(T)}
         {
         }
 

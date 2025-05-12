@@ -32,6 +32,9 @@ int main()
     printf("Loaded \"%s\" (%zu bits total) with %s\n",
            object.data, load2_result.bits, serdes::status2str(load2_result.status));
 
+    serial_data[0] = '\x00'; // corrupt the serial data
+
+    // store the object back into the serial data to show the corruption is remmoved
     auto store_result = object.store(serial_data);
     printf("Stored \"%s\" (%zu bits total) with %s\n",
            serial_data, store_result.bits, serdes::status2str(store_result.status));
