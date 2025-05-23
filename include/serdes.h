@@ -397,7 +397,7 @@ namespace serdes
                 array_size = value.max_size;
                 status = status_e::ARRAY_SIZE_OVER_MAX;
             }
-            const size_t total_bits = array_size * sizeof(T) * 8;
+            const size_t total_bits = array_size * sizeof(typename serdes::array<T, T2>::elem_type) * 8;
             // shortcut for memory aligned situations
             if (sizeof(typename serdes::array<T, T2>::elem_type) == 1 && bits == 8 && buffer.element_size == 1 && (bit_offset & 7u) == 0u && bit_capacity - bit_offset >= total_bits)
             {
@@ -789,7 +789,7 @@ namespace serdes
                 array_size = value.max_size;
                 status = status_e::ARRAY_SIZE_OVER_MAX;
             }
-            const size_t total_bits = array_size * sizeof(T) * 8;
+            const size_t total_bits = array_size * sizeof(typename serdes::array<T, T2>::elem_type) * 8;
             // shortcut for memory aligned situations
             if (sizeof(typename serdes::array<T, T2>::elem_type) == 1 && bits == 8 && buffer.element_size == 1 && (bit_offset & 7u) == 0u && bit_capacity - bit_offset >= total_bits)
             {

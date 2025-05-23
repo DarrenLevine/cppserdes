@@ -16,7 +16,10 @@ inline R i_list(T(&&init_val)[N])
 long unsigned int tests = 0;
 long unsigned int passes = 0;
 
-template <typename T1, typename T2>
+template <typename T1, typename T2,
+    typename std::enable_if<
+        !serdes::detail::has_data_and_size<T1>::value &&
+        !serdes::detail::has_data_and_size<T2>::value, int>::type * = nullptr>
 bool byte_cmp(T1 lhs, T2 rhs_init)
 {
     ++tests;
@@ -40,9 +43,24 @@ bool byte_cmp(B (&result_array)[N], D (&expected_array)[N2])
     ++passes;
     return true;
 }
+template <typename T1, typename T2,
+    typename std::enable_if<
+        serdes::detail::has_data_and_size<T1>::value &&
+        serdes::detail::has_data_and_size<T2>::value, int>::type * = nullptr>
+bool byte_cmp(T1&& lhs, T2&& rhs_init)
+{
+    ++tests;
+    if (rhs_init.size() > lhs.size())
+        return false;
+    for (size_t i = 0; i < rhs_init.size(); i++)
+        if (lhs[i] != rhs_init[i])
+            return false;
+    ++passes;
+    return true;
+}
 
 template <typename T1, typename T2, typename std::enable_if<!std::is_pointer<T2>::value && !std::is_array<typename std::remove_reference<T2>::type>::value, bool *>::type = nullptr>
-inline void assert_equals_test(T1 lhs, T2 rhs, const char *test_statement, const char *va_args, const char *filename, int line_number)
+inline void assert_equals_test(T1 &&lhs, T2 &&rhs, const char *test_statement, const char *va_args, const char *filename, int line_number)
 {
     if (!byte_cmp(lhs, rhs))
     {
@@ -54,7 +72,7 @@ inline void assert_equals_test(T1 lhs, T2 rhs, const char *test_statement, const
     }
 }
 template <typename B, typename D, size_t N = 0, size_t N2 = 0>
-inline void assert_equals_test(B (&lhs)[N], D(&&rhs_init)[N2], const char *test_statement, const char *va_args, const char *filename, int line_number)
+inline void assert_equals_test(B (&lhs)[N], D(&rhs_init)[N2], const char *test_statement, const char *va_args, const char *filename, int line_number)
 {
     B rhs[N2];
     for (size_t i = 0; i < N2; i++)
@@ -67,6 +85,11 @@ inline void assert_equals_test(B (&lhs)[N], D(&&rhs_init)[N2], const char *test_
         printf("    != ");
         serdes::printhex(rhs);
     }
+}
+template <typename B, typename D, size_t N = 0, size_t N2 = 0>
+inline void assert_equals_test(B (&lhs)[N], D(&&rhs_init)[N2], const char *test_statement, const char *va_args, const char *filename, int line_number)
+{
+    assert_equals_test(lhs, rhs_init, test_statement, va_args, filename, line_number);
 }
 
 #define ASSERT_EQUALS(lhs, ...) assert_equals_test(lhs, __VA_ARGS__, #lhs, #__VA_ARGS__, __FILE__, __LINE__)

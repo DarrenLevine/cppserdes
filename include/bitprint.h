@@ -185,6 +185,46 @@ namespace serdes
         bitprint_detail::print_bracket_newline<use_brackets>(add_newline);
     }
 
+    namespace bitprint_detail
+    {
+        /// @brief same as std::void_t but included here for C++11 support
+        template <typename...>
+        using void_t_test = void;
+
+        /// @brief detecting classes that have 'T* data()' and 'size_t size()' methods
+        template <typename T, typename = void>
+        struct has_data_and_size : std::false_type
+        {
+        };
+        template <typename T>
+        struct has_data_and_size<
+            T, void_t_test<
+                   decltype(std::declval<typename std::remove_cv<typename std::remove_reference<T>::type>::type>().data()),
+                   decltype(std::declval<typename std::remove_cv<typename std::remove_reference<T>::type>::type>().size())>>
+            : std::true_type
+        {
+        };
+    } // namespace bitprint_detail
+
+    /// @brief prints an array in hex format
+    /// @tparam   use_brackets: if true, curly brackets will surround the printed statement
+    /// @param    data: value to print
+    /// @param    add_newline: if true, a newline will be added to the end
+    template <bool use_brackets = true, typename T = void,
+        typename std::enable_if<bitprint_detail::has_data_and_size<T>::value, int>::type * = nullptr>
+    void printhex(const T& data, const bool add_newline = true)
+    {
+        if (use_brackets)
+            printf("{");
+        const size_t N = data.size();
+        for (size_t i = 0; i < N; i++)
+        {
+            printhex(data[i], false);
+            printf("%s", (i + 1u < N ? ", " : ""));
+        }
+        bitprint_detail::print_bracket_newline<use_brackets>(add_newline);
+    }
+
     /// @brief prints an array in hex format
     /// @tparam   use_brackets: if true, curly brackets will surround the printed statement
     /// @param    data: c-array to print
