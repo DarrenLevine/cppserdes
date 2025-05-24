@@ -65,13 +65,13 @@ namespace serdes
     struct info
     {
         /// @brief CppSerdes library version number
-        static constexpr float version = 1.1f;
+        static constexpr float version = 1.2f;
 
         /// @brief CppSerdes library #define major version
         #define LIB_CPP_SERDES_VERSION_MAJOR 1
 
         /// @brief CppSerdes library #define minor version
-        #define LIB_CPP_SERDES_VERSION_MINOR 1
+        #define LIB_CPP_SERDES_VERSION_MINOR 2
 
         /// @brief CppSerdes library create single version number, from two major and
         /// minor numbers, suitable for >= comparisons.

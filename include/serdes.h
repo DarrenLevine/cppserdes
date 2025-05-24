@@ -24,6 +24,28 @@
 #include "cppcrc.h"
 #endif
 
+// if inlining is increasing your binary size too much, you can disable them using configCPP_SERDES_LIB_INLINE_PACKET_API_AGGRESSION=0
+//
+// level 0 disables all unnecessary inline statements (functions that aren't templatized still need inline)
+// level 1 leaves inline on very small or important functions (functions that just wrap bitcpy for example)
+// level 2 puts inline on pretty much everything
+#ifndef configCPP_SERDES_LIB_INLINE_PACKET_API_AGGRESSION
+#define configCPP_SERDES_LIB_INLINE_PACKET_API_AGGRESSION 1
+#endif
+#if configCPP_SERDES_LIB_INLINE_PACKET_API_AGGRESSION < 0 || configCPP_SERDES_LIB_INLINE_PACKET_API_AGGRESSION > 2
+#error "configCPP_SERDES_LIB_INLINE_PACKET_API_AGGRESSION must be 0, 1, or 2"
+#endif
+#if configCPP_SERDES_LIB_INLINE_PACKET_API_AGGRESSION == 0
+#define CPP_SERDES_LIB_PACKET_API_INLINE1
+#define CPP_SERDES_LIB_PACKET_API_INLINE2
+#elif configCPP_SERDES_LIB_INLINE_PACKET_API_AGGRESSION == 1
+#define CPP_SERDES_LIB_PACKET_API_INLINE1 inline
+#define CPP_SERDES_LIB_PACKET_API_INLINE2
+#elif configCPP_SERDES_LIB_INLINE_PACKET_API_AGGRESSION == 2
+#define CPP_SERDES_LIB_PACKET_API_INLINE1 inline
+#define CPP_SERDES_LIB_PACKET_API_INLINE2 inline
+#endif
+
 /// @brief CppSerdes library namespace
 namespace serdes
 {
@@ -97,7 +119,7 @@ namespace serdes
 
         /// @brief moves the bit offset head the specified bits
         /// @param    bits: number of bits to pad
-        void pad(const size_t bits)
+        inline void pad(const size_t bits) noexcept
         {
             if (status == status_e::NO_ERROR)
                 pad_assuming_no_prior_errors(bits);
@@ -105,7 +127,7 @@ namespace serdes
 
         /// @brief aligns (increases) the bit offset to a multiple of the specified bits
         /// @param    bits: number of bits to align to
-        void align(size_t bits)
+        inline void align(size_t bits) noexcept
         {
             if (status == status_e::NO_ERROR)
                 align_assuming_no_prior_errors(bits);
@@ -121,7 +143,7 @@ namespace serdes
         /// @param    value: target value to load into
         /// @param    bits: number of bits per value element (not of the entire array)
         template <typename T, size_t N>
-        void load(T (&value)[N], size_t bits = detail::default_bitsize<T>::value)
+        CPP_SERDES_LIB_PACKET_API_INLINE1 void load(T (&value)[N], size_t bits = detail::default_bitsize<T>::value)
         {
             array<T, size_t> temp_arr(value, N);
             load(temp_arr, bits);
@@ -136,7 +158,7 @@ namespace serdes
             detail::has_data_and_size<typename detail::remove_cvref_cpp11<T>::type>::value &&
             !detail::has_custom_type_override<typename detail::remove_cvref_cpp11<T>::type>::value
             , int *>::type = nullptr>
-        void load(T &&value, size_t bits = detail::default_bitsize<typename detail::has_data_and_size<typename detail::remove_cvref_cpp11<T>::type>::elem_type>::value)
+        CPP_SERDES_LIB_PACKET_API_INLINE2 void load(T &&value, size_t bits = detail::default_bitsize<typename detail::has_data_and_size<typename detail::remove_cvref_cpp11<T>::type>::elem_type>::value)
         {
             if (status != status_e::NO_ERROR)
                 return;
@@ -160,7 +182,7 @@ namespace serdes
             !detail::is_format_modifier<typename detail::remove_cvref_cpp11<T>::type>::value &&
             detail::supported_by_bitcpy<typename detail::remove_cvref_cpp11<T>::type>::value,
                                        int *>::type = nullptr>
-        void load(T &value, size_t bits = detail::default_bitsize<T>::value)
+        CPP_SERDES_LIB_PACKET_API_INLINE1 void load(T &value, size_t bits = detail::default_bitsize<T>::value)
         {
             if (status != status_e::NO_ERROR)
                 return;
@@ -191,7 +213,7 @@ namespace serdes
                     !detail::has_data_and_size<typename detail::remove_cvref_cpp11<T>::type>::value
                 )
             ), int *>::type = nullptr>
-        void load(T &&value, size_t bits = custom_type<typename detail::remove_cvref_cpp11<T>::type>::default_bits)
+        CPP_SERDES_LIB_PACKET_API_INLINE2 void load(T &&value, size_t bits = custom_type<typename detail::remove_cvref_cpp11<T>::type>::default_bits)
         {
             if (status != status_e::NO_ERROR)
                 return;
@@ -218,7 +240,7 @@ namespace serdes
                     !detail::has_data_and_size<typename detail::remove_cvref_cpp11<T>::type>::value
                 )
             ), int *>::type = nullptr>
-        void load(T &&value)
+        CPP_SERDES_LIB_PACKET_API_INLINE2 void load(T &&value)
         {
             if (status != status_e::NO_ERROR)
                 return;
@@ -231,7 +253,7 @@ namespace serdes
         /// @tparam   T : A type with a "void format(serdes::packet&)" method (does not need to be from packet_base)
         /// @param    value : the object to write serial data to
         template <typename T, typename std::enable_if<detail::has_format_method<T>::value, int *>::type = nullptr>
-        void load(T &&value)
+        CPP_SERDES_LIB_PACKET_API_INLINE2 void load(T &&value)
         {
             if (status != status_e::NO_ERROR)
                 return;
@@ -244,7 +266,7 @@ namespace serdes
         /// @tparam   T : Any type with "T load()" and "void store(T)" methods
         /// @param    value : the object to write serial data to
         template <typename T, typename std::enable_if<detail::has_load_and_store<typename detail::remove_cvref_cpp11<T>::type>::value, int *>::type = nullptr>
-        void load(T &&value)
+        CPP_SERDES_LIB_PACKET_API_INLINE1 void load(T &&value)
         {
             if (status != status_e::NO_ERROR)
                 return;
@@ -263,7 +285,7 @@ namespace serdes
             // could wrap a valid lvalue variable such as "packet >> serdes::array(data);"
             && detail::supported_by_bitcpy<T>::value,
             int *>::type = nullptr>
-        void load(T &&value, size_t bits = detail::default_bitsize<T>::value)
+        CPP_SERDES_LIB_PACKET_API_INLINE2 void load(T &&value, size_t bits = detail::default_bitsize<T>::value)
         {
             (void)value;
             (void)bits;
@@ -278,7 +300,7 @@ namespace serdes
         template<typename T, typename std::enable_if<
             detail::is_formatter<typename detail::remove_cvref_cpp11<T>::type>::value,
             int *>::type* = nullptr>
-        void load(T &&value)
+        CPP_SERDES_LIB_PACKET_API_INLINE2 void load(T &&value)
         {
             if (status != status_e::NO_ERROR)
                 return;
@@ -296,7 +318,7 @@ namespace serdes
         /// @param    value: referenced delimited_array
         /// @param    bits: number of bits per element
         template <typename T, typename std::enable_if<!detail::is_format_modifier<typename delimited_array<T>::elem_type>::value, int *>::type = nullptr>
-        void load(delimited_array<T> &value, size_t bits = detail::default_bitsize<typename delimited_array<T>::elem_type>::value)
+        CPP_SERDES_LIB_PACKET_API_INLINE2 void load(delimited_array<T> &value, size_t bits = detail::default_bitsize<typename delimited_array<T>::elem_type>::value)
         {
             if (status != status_e::NO_ERROR)
                 return;
@@ -352,7 +374,7 @@ namespace serdes
         /// @tparam   T: underlying type of the delimited_array
         /// @param    value: referenced delimited_array
         template <typename T, typename std::enable_if<detail::has_format_method<typename delimited_array<T>::elem_type>::value, int *>::type = nullptr>
-        void load(delimited_array<T> &value)
+        CPP_SERDES_LIB_PACKET_API_INLINE2 void load(delimited_array<T> &value)
         {
             if (status != status_e::NO_ERROR)
                 return;
@@ -370,7 +392,7 @@ namespace serdes
         /// @tparam   T: underlying type of the delimited_array
         /// @param    value: referenced delimited_array
         template <typename T>
-        void load(delimited_array<T> &&value)
+        CPP_SERDES_LIB_PACKET_API_INLINE1 void load(delimited_array<T> &&value)
         {
             load(value);
         }
@@ -384,7 +406,7 @@ namespace serdes
             !detail::is_format_modifier<typename serdes::array<T, T2>::elem_type>::value &&
             detail::supported_by_bitcpy<typename serdes::array<T, T2>::elem_type>::value
             , int *>::type = nullptr>
-        void load(serdes::array<T, T2> &value, size_t bits = detail::default_bitsize<typename serdes::array<T, T2>::elem_type>::value)
+        CPP_SERDES_LIB_PACKET_API_INLINE2 void load(serdes::array<T, T2> &value, size_t bits = detail::default_bitsize<typename serdes::array<T, T2>::elem_type>::value)
         {
             if (status != status_e::NO_ERROR)
                 return;
@@ -426,7 +448,7 @@ namespace serdes
             !detail::is_format_modifier<typename serdes::array<T, T2>::elem_type>::value &&
             !detail::supported_by_bitcpy<typename serdes::array<T, T2>::elem_type>::value
             , int *>::type = nullptr>
-        void load(serdes::array<T, T2> &value, size_t bits = detail::default_bitsize<typename serdes::array<T, T2>::elem_type>::value)
+        CPP_SERDES_LIB_PACKET_API_INLINE2 void load(serdes::array<T, T2> &value, size_t bits = detail::default_bitsize<typename serdes::array<T, T2>::elem_type>::value)
         {
             if (status != status_e::NO_ERROR)
                 return;
@@ -448,7 +470,7 @@ namespace serdes
         /// @tparam   T2: underlying size type of the array
         /// @param    value: referenced array
         template <typename T, typename T2, typename std::enable_if<detail::has_format_method<typename serdes::array<T, T2>::elem_type>::value, int *>::type = nullptr>
-        void load(serdes::array<T, T2> &value)
+        CPP_SERDES_LIB_PACKET_API_INLINE2 void load(serdes::array<T, T2> &value)
         {
             if (status != status_e::NO_ERROR)
                 return;
@@ -474,7 +496,7 @@ namespace serdes
         /// @tparam   T2: underlying size type of the array
         /// @param    value: referenced array
         template <typename T, typename T2>
-        void load(serdes::array<T, T2> &&value)
+        CPP_SERDES_LIB_PACKET_API_INLINE1 void load(serdes::array<T, T2> &&value)
         {
             load(value);
         }
@@ -483,7 +505,7 @@ namespace serdes
         /// @tparam   ST: size type of the pad
         /// @param    padding: pad value
         template <typename ST>
-        void load(const serdes::pad<ST> padding)
+        CPP_SERDES_LIB_PACKET_API_INLINE2 void load(const serdes::pad<ST> padding)
         {
             if (status != status_e::NO_ERROR)
                 return;
@@ -495,7 +517,7 @@ namespace serdes
         /// @tparam   ST: size type of the align
         /// @param    alignment: align value
         template <typename ST>
-        void load(const serdes::align<ST> alignment)
+        CPP_SERDES_LIB_PACKET_API_INLINE2 void load(const serdes::align<ST> alignment)
         {
             if (status != status_e::NO_ERROR)
                 return;
@@ -508,7 +530,7 @@ namespace serdes
         /// @tparam   ST: underlying size type of the bitpack object
         /// @param    value: referenced bitpack rvalue
         template <typename T, typename ST>
-        void load(bitpack<T, ST> &&value)
+        CPP_SERDES_LIB_PACKET_API_INLINE1 void load(bitpack<T, ST> &&value)
         {
             load(value.value, value.bits);
         }
@@ -518,14 +540,14 @@ namespace serdes
         /// @tparam   ST: underlying size type of the bitpack object
         /// @param    value: referenced bitpack reference
         template <typename T, typename ST>
-        void load(bitpack<T, ST> &value)
+        CPP_SERDES_LIB_PACKET_API_INLINE1 void load(bitpack<T, ST> &value)
         {
             load(value.value, value.bits);
         }
 
         /// @brief [[deserialize]] loads from serial buffer into a packet_base reference
         /// @param    value: referenced packet_base reference
-        void load(packet_base &value)
+        inline void load(packet_base &value)
         {
             if (status != status_e::NO_ERROR)
                 return;
@@ -535,7 +557,7 @@ namespace serdes
 
         /// @brief [[deserialize]] loads from serial buffer into a packet_base rvalue
         /// @param    value: referenced packet_base rvalue
-        void load(packet_base &&value)
+        inline void load(packet_base &&value)
         {
             load(value);
         }
@@ -552,7 +574,7 @@ namespace serdes
             !detail::is_format_modifier<typename detail::remove_cvref_cpp11<T>::type>::value &&
             detail::supported_by_bitcpy<typename detail::remove_cvref_cpp11<T>::type>::value,
                                   int *>::type = nullptr>
-        void store(const T &value, size_t bits = detail::default_bitsize<T>::value)
+        CPP_SERDES_LIB_PACKET_API_INLINE1 void store(const T &value, size_t bits = detail::default_bitsize<T>::value)
         {
             if (status != status_e::NO_ERROR)
                 return;
@@ -584,7 +606,7 @@ namespace serdes
                     !detail::has_data_and_size<typename detail::remove_cvref_cpp11<T>::type>::value
                 )
             ), int *>::type = nullptr>
-        void store(T &&value, size_t bits = custom_type<typename detail::remove_cvref_cpp11<T>::type>::default_bits)
+        CPP_SERDES_LIB_PACKET_API_INLINE2 void store(T &&value, size_t bits = custom_type<typename detail::remove_cvref_cpp11<T>::type>::default_bits)
         {
             if (status != status_e::NO_ERROR)
                 return;
@@ -611,7 +633,7 @@ namespace serdes
                     !detail::has_data_and_size<typename detail::remove_cvref_cpp11<T>::type>::value
                 )
             ), int *>::type = nullptr>
-        void store(T &&value)
+        CPP_SERDES_LIB_PACKET_API_INLINE2 void store(T &&value)
         {
             if (status != status_e::NO_ERROR)
                 return;
@@ -623,7 +645,7 @@ namespace serdes
         /// @tparam   T : A type with a "void format(serdes::packet&)" method (does not need to be from packet_base)
         /// @param    value : the object to turn into serial data
         template <typename T, typename std::enable_if<detail::has_format_method<T>::value, int *>::type = nullptr>
-        void store(T &&value)
+        CPP_SERDES_LIB_PACKET_API_INLINE2 void store(T &&value)
         {
             if (status != status_e::NO_ERROR)
                 return;
@@ -636,7 +658,7 @@ namespace serdes
         /// @param    value : the object to write serial data to
         template <typename T, typename std::enable_if<detail::has_load_and_store<
             typename detail::remove_cvref_cpp11<T>::type>::value, int *>::type = nullptr>
-        void store(T &&value)
+        CPP_SERDES_LIB_PACKET_API_INLINE1 void store(T &&value)
         {
             if (status != status_e::NO_ERROR)
                 return;
@@ -650,7 +672,7 @@ namespace serdes
         /// @param    value: value to store
         /// @param    bits: bits per value element
         template <typename T, size_t N>
-        void store(const T (&value)[N], size_t bits = detail::default_bitsize<T>::value)
+        CPP_SERDES_LIB_PACKET_API_INLINE1 void store(const T (&value)[N], size_t bits = detail::default_bitsize<T>::value)
         {
             store(array<const T, size_t>(value, N), bits);
         }
@@ -664,7 +686,7 @@ namespace serdes
             detail::has_data_and_size<typename detail::remove_cvref_cpp11<T>::type>::value &&
             !detail::has_custom_type_override<typename detail::remove_cvref_cpp11<T>::type>::value
             , int *>::type = nullptr>
-        void store(T &&value, size_t bits = detail::default_bitsize<typename detail::has_data_and_size<typename detail::remove_cvref_cpp11<T>::type>::elem_type>::value)
+        CPP_SERDES_LIB_PACKET_API_INLINE2 void store(T &&value, size_t bits = detail::default_bitsize<typename detail::has_data_and_size<typename detail::remove_cvref_cpp11<T>::type>::elem_type>::value)
         {
             size_t size = value.size();
             if (size == 0u)
@@ -680,7 +702,7 @@ namespace serdes
         /// @param    value: value to store
         /// @param    bits: bits per value element
         template <typename T, size_t N>
-        void store(const T(&&value)[N], size_t bits = detail::default_bitsize<T>::value)
+        CPP_SERDES_LIB_PACKET_API_INLINE1 void store(const T(&&value)[N], size_t bits = detail::default_bitsize<T>::value)
         {
             store(array<const T, size_t>(value, N), bits);
         }
@@ -690,7 +712,7 @@ namespace serdes
         /// @param    value: value to store
         /// @param    bits: bits per element of the array
         template <typename T, typename std::enable_if<!detail::is_format_modifier<typename delimited_array<T>::elem_type>::value, int *>::type = nullptr>
-        void store(const delimited_array<T> &value, size_t bits = detail::default_bitsize<typename delimited_array<T>::elem_type>::value)
+        CPP_SERDES_LIB_PACKET_API_INLINE2 void store(const delimited_array<T> &value, size_t bits = detail::default_bitsize<typename delimited_array<T>::elem_type>::value)
         {
             if (status != status_e::NO_ERROR)
                 return;
@@ -744,7 +766,7 @@ namespace serdes
         /// @tparam   T: delimited_array base type (must be derived from packet_base or have a "void format(packet&)" method)
         /// @param    value: value to store
         template <typename T, typename std::enable_if<detail::has_format_method<typename delimited_array<T>::elem_type>::value, int *>::type = nullptr>
-        void store(const delimited_array<T> &value)
+        CPP_SERDES_LIB_PACKET_API_INLINE2 void store(const delimited_array<T> &value)
         {
             if (status != status_e::NO_ERROR)
                 return;
@@ -762,7 +784,7 @@ namespace serdes
         /// @tparam   T: delimited_array base type (must be derived from packet_base or have a "void format(packet&)" method)
         /// @param    value: value to store
         template <typename T>
-        void store(const delimited_array<T> &&value)
+        CPP_SERDES_LIB_PACKET_API_INLINE1 void store(const delimited_array<T> &&value)
         {
             store(value);
         }
@@ -776,7 +798,7 @@ namespace serdes
             !detail::is_format_modifier<typename serdes::array<T, T2>::elem_type>::value &&
             detail::supported_by_bitcpy<typename serdes::array<T, T2>::elem_type>::value
             , int *>::type = nullptr>
-        void store(const serdes::array<T, T2> &value, size_t bits = detail::default_bitsize<typename serdes::array<T, T2>::elem_type>::value)
+        CPP_SERDES_LIB_PACKET_API_INLINE2 void store(const serdes::array<T, T2> &value, size_t bits = detail::default_bitsize<typename serdes::array<T, T2>::elem_type>::value)
         {
             if (status != status_e::NO_ERROR)
                 return;
@@ -818,7 +840,7 @@ namespace serdes
             !detail::is_format_modifier<typename serdes::array<T, T2>::elem_type>::value &&
             !detail::supported_by_bitcpy<typename serdes::array<T, T2>::elem_type>::value
             , int *>::type = nullptr>
-        void store(const serdes::array<T, T2> &value, size_t bits = detail::default_bitsize<typename serdes::array<T, T2>::elem_type>::value)
+        CPP_SERDES_LIB_PACKET_API_INLINE2 void store(const serdes::array<T, T2> &value, size_t bits = detail::default_bitsize<typename serdes::array<T, T2>::elem_type>::value)
         {
             if (status != status_e::NO_ERROR)
                 return;
@@ -840,7 +862,7 @@ namespace serdes
         /// @tparam   T2: array size type
         /// @param    value: value to store
         template <typename T, typename T2, typename std::enable_if<detail::has_format_method<typename serdes::array<T, T2>::elem_type>::value, int *>::type = nullptr>
-        void store(const serdes::array<T, T2> &value)
+        CPP_SERDES_LIB_PACKET_API_INLINE2 void store(const serdes::array<T, T2> &value)
         {
             if (status != status_e::NO_ERROR)
                 return;
@@ -866,7 +888,7 @@ namespace serdes
         /// @tparam   T2: array size type
         /// @param    value: value to store
         template <typename T, typename T2>
-        void store(const array<T, T2> &&value)
+        CPP_SERDES_LIB_PACKET_API_INLINE1 void store(const array<T, T2> &&value)
         {
             store(value);
         }
@@ -876,7 +898,7 @@ namespace serdes
         template<typename T, typename std::enable_if<
             detail::is_formatter<typename detail::remove_cvref_cpp11<T>::type>::value,
             int *>::type* = nullptr>
-        void store(T &&value)
+        CPP_SERDES_LIB_PACKET_API_INLINE2 void store(T &&value)
         {
             if (status != status_e::NO_ERROR)
                 return;
@@ -893,7 +915,7 @@ namespace serdes
         /// @tparam   ST: size type of the pad
         /// @param    padding: pad value
         template <typename ST>
-        void store(const serdes::pad<ST> padding)
+        CPP_SERDES_LIB_PACKET_API_INLINE1 void store(const serdes::pad<ST> padding)
         {
             if (status != status_e::NO_ERROR)
                 return;
@@ -905,7 +927,7 @@ namespace serdes
         /// @tparam   ST: size type of the align
         /// @param    alignment: align value
         template <typename ST>
-        void store(const serdes::align<ST> alignment)
+        CPP_SERDES_LIB_PACKET_API_INLINE1 void store(const serdes::align<ST> alignment)
         {
             if (status != status_e::NO_ERROR)
                 return;
@@ -918,7 +940,7 @@ namespace serdes
         /// @tparam   ST: underlying size type of the bitpack object
         /// @param    value: value to store
         template <typename T, typename ST>
-        void store(const bitpack<T, ST> &&value)
+        CPP_SERDES_LIB_PACKET_API_INLINE1 void store(const bitpack<T, ST> &&value)
         {
             store(value.value, value.bits);
         }
@@ -928,14 +950,14 @@ namespace serdes
         /// @tparam   ST: underlying size type of the bitpack object
         /// @param    value: value to store
         template <typename T, typename ST>
-        void store(const bitpack<T, ST> &value)
+        CPP_SERDES_LIB_PACKET_API_INLINE1 void store(const bitpack<T, ST> &value)
         {
             store(value.value, value.bits);
         }
 
         /// @brief [[serialize]] stores a packet_base reference into a serial buffer
         /// @param    value: value to store
-        void store(const packet_base &value)
+        inline void store(const packet_base &value)
         {
             if (status != status_e::NO_ERROR)
                 return;
@@ -945,7 +967,7 @@ namespace serdes
 
         /// @brief [[serialize]] stores a packet_base rvalue into a serial buffer
         /// @param    value: value to store
-        void store(const packet_base &&value)
+        inline void store(const packet_base &&value)
         {
             store(value);
         }
@@ -959,7 +981,7 @@ namespace serdes
         /// @param    x: value reference
         /// @return   packet&: resulting modified packet process
         template <typename T>
-        packet &operator>>(T &&x)
+        CPP_SERDES_LIB_PACKET_API_INLINE1 packet &operator>>(T &&x)
         {
             load(std::forward<T>(x));
             return *this;
@@ -970,7 +992,7 @@ namespace serdes
         /// @param    x: value
         /// @return   packet&: resulting modified packet process
         template <typename T>
-        packet &operator<<(T &&x)
+        CPP_SERDES_LIB_PACKET_API_INLINE1 packet &operator<<(T &&x)
         {
             store(std::forward<T>(x));
             return *this;
@@ -985,7 +1007,7 @@ namespace serdes
         /// @param    x: value
         /// @param    bits: number of bits to store/load the value into/out-of
         template <typename T>
-        void add(T &&x, size_t bits)
+        CPP_SERDES_LIB_PACKET_API_INLINE1 void add(T &&x, size_t bits)
         {
             if (mode == mode_e::LOADING)
                 load(std::forward<T>(x), bits);
@@ -998,7 +1020,7 @@ namespace serdes
         /// @param    x: value
         /// @param    bits: number of bits to store/load the value into/out-of
         template <typename T, size_t N>
-        void add(T (&x)[N], size_t bits)
+        CPP_SERDES_LIB_PACKET_API_INLINE1 void add(T (&x)[N], size_t bits)
         {
             if (mode == mode_e::LOADING)
                 for (size_t i = 0; i < N; i++)
@@ -1014,7 +1036,7 @@ namespace serdes
         template <typename T, typename std::enable_if<
             !detail::is_validator<typename detail::remove_cvref_cpp11<T>::type>::value,
             int *>::type* = nullptr>
-        void add(T &&x)
+        CPP_SERDES_LIB_PACKET_API_INLINE1 void add(T &&x)
         {
             if (mode == mode_e::LOADING)
                 load(std::forward<T>(x));
@@ -1026,7 +1048,7 @@ namespace serdes
         /// @tparam   T: value type
         /// @param    x: value
         template <typename T, size_t N>
-        void add(T (&x)[N])
+        CPP_SERDES_LIB_PACKET_API_INLINE1 void add(T (&x)[N])
         {
             if (mode == mode_e::LOADING)
                 for (size_t i = 0; i < N; i++)
@@ -1042,7 +1064,7 @@ namespace serdes
         /// @param    value: value
         /// @param    validation: function that returns true if the field is valid, false to abort the process
         template <typename T, typename F>
-        void add(T &&value, F &&validation)
+        CPP_SERDES_LIB_PACKET_API_INLINE1 void add(T &&value, F &&validation)
         {
             if (status != status_e::NO_ERROR)
                 return;
@@ -1066,7 +1088,7 @@ namespace serdes
         template <typename T, typename std::enable_if<
             detail::is_validator<typename detail::remove_cvref_cpp11<T>::type>::value,
             int *>::type* = nullptr>
-        void add(T &&value)
+        CPP_SERDES_LIB_PACKET_API_INLINE1 void add(T &&value)
         {
             add(value.field, value.validation);
         }
@@ -1084,7 +1106,7 @@ namespace serdes
         /// @param    value: value
         /// @return   packet&: modified packet process after the add
         template <typename T>
-        packet &operator+(T &&value)
+        CPP_SERDES_LIB_PACKET_API_INLINE1 packet &operator+(T &&value)
         {
             add(std::forward<T>(value));
             return *this;
@@ -1156,7 +1178,7 @@ namespace serdes
         /// @param    crc_field : the field you'd like to store the value in in STORING mode
         /// @return   cpp_crc_type::type : the calculated value of the CRC
         template <typename cpp_crc_type>
-        typename cpp_crc_type::type calculate_crc(typename cpp_crc_type::type *crc_field = nullptr)
+        CPP_SERDES_LIB_PACKET_API_INLINE2 typename cpp_crc_type::type calculate_crc(typename cpp_crc_type::type *crc_field = nullptr)
         {
             auto crc_calculated = cpp_crc_type::null_crc;
             for (auto &segment : previous_bytes())
@@ -1170,7 +1192,7 @@ namespace serdes
     private:
         /// @brief adds the specified pad bits, without any safety status checking
         /// @param    bits
-        inline void pad_assuming_no_prior_errors(const size_t bits)
+        inline void pad_assuming_no_prior_errors(const size_t bits) noexcept
         {
             const size_t next_bit_offset = bit_offset + bits;
             if (next_bit_offset > bit_capacity)
@@ -1183,7 +1205,7 @@ namespace serdes
 
         /// @brief adds the specified alignment bits, without any safety status checking
         /// @param    bits
-        inline void align_assuming_no_prior_errors(size_t bits)
+        inline void align_assuming_no_prior_errors(size_t bits) noexcept
         {
             const size_t alignment = bit_offset % bits;
             if (alignment > 0)
@@ -1199,7 +1221,7 @@ namespace serdes
         }
 
         /// @brief ensures that the mode is in LOADING mode if the user used a load specific operator
-        inline void ensure_load()
+        inline void ensure_load() noexcept
         {
             if (mode != mode_e::LOADING)
             {
@@ -1210,7 +1232,7 @@ namespace serdes
         }
 
         /// @brief ensures that the mode is in STORING mode if the user used a store specific operator
-        inline void ensure_store()
+        inline void ensure_store() noexcept
         {
             if (mode != mode_e::STORING)
             {
@@ -1270,12 +1292,12 @@ namespace serdes
         return {pkt_obj.status, pkt_obj.bit_offset};
     }
     template <typename T>
-    status_t packet_base::operator>>(T &&value)
+    CPP_SERDES_LIB_PACKET_API_INLINE1 status_t packet_base::operator>>(T &&value)
     {
         return store(std::forward<T>(value));
     }
     template <typename T>
-    status_t packet_base::operator<<(T &&value)
+    CPP_SERDES_LIB_PACKET_API_INLINE1 status_t packet_base::operator<<(T &&value)
     {
         return load(std::forward<T>(value));
     }

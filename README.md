@@ -2,7 +2,7 @@
 
 ***CppSerdes*** is a serialization/deserialization library designed with embedded systems in mind - where bit-level manipulation and low-level protocol design tooling are first class citizens
 
-![license](https://img.shields.io/badge/license-MIT-informational) ![version](https://img.shields.io/badge/version-1.1-blue)
+![license](https://img.shields.io/badge/license-MIT-informational) ![version](https://img.shields.io/badge/version-1.2-blue)
 
 ## Features
 

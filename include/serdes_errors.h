@@ -7,6 +7,8 @@
 #ifndef _SERDES_ERRORS_H_
 #define _SERDES_ERRORS_H_
 
+#include <cstddef>
+
 /// @brief CppSerdes library namespace
 namespace serdes
 {
