@@ -8,6 +8,7 @@
 #ifndef _SERDES_H_
 #define _SERDES_H_
 
+// clang-format off
 #include <cstring>
 #include "bitcpy.h"
 #include "bitliterals.h"
@@ -61,7 +62,7 @@ namespace serdes
         /// @brief resets the bit offset to 0 and the status to NO_ERROR
         inline void reset() noexcept
         {
-            status = status_e::NO_ERROR;
+            status     = status_e::NO_ERROR;
             bit_offset = 0;
         }
 
@@ -417,7 +418,7 @@ namespace serdes
             if (array_size > value.max_size)
             {
                 array_size = value.max_size;
-                status = status_e::ARRAY_SIZE_OVER_MAX;
+                status     = status_e::ARRAY_SIZE_OVER_MAX;
             }
             const size_t total_bits = array_size * sizeof(typename serdes::array<T, T2>::elem_type) * 8;
             // shortcut for memory aligned situations
@@ -459,7 +460,7 @@ namespace serdes
             if (array_size > value.max_size)
             {
                 array_size = value.max_size;
-                status = status_e::ARRAY_SIZE_OVER_MAX;
+                status     = status_e::ARRAY_SIZE_OVER_MAX;
             }
             for (size_t i = 0; i < array_size && status != status_e::NO_ERROR; i++)
                 load(value.value[i], bits);
@@ -702,7 +703,7 @@ namespace serdes
         /// @param    value: value to store
         /// @param    bits: bits per value element
         template <typename T, size_t N>
-        CPP_SERDES_LIB_PACKET_API_INLINE1 void store(const T(&&value)[N], size_t bits = detail::default_bitsize<T>::value)
+        CPP_SERDES_LIB_PACKET_API_INLINE1 void store(const T (&&value)[N], size_t bits = detail::default_bitsize<T>::value)
         {
             store(array<const T, size_t>(value, N), bits);
         }
@@ -809,7 +810,7 @@ namespace serdes
             if (array_size > value.max_size)
             {
                 array_size = value.max_size;
-                status = status_e::ARRAY_SIZE_OVER_MAX;
+                status     = status_e::ARRAY_SIZE_OVER_MAX;
             }
             const size_t total_bits = array_size * sizeof(typename serdes::array<T, T2>::elem_type) * 8;
             // shortcut for memory aligned situations
@@ -851,7 +852,7 @@ namespace serdes
             if (array_size > value.max_size)
             {
                 array_size = value.max_size;
-                status = status_e::ARRAY_SIZE_OVER_MAX;
+                status     = status_e::ARRAY_SIZE_OVER_MAX;
             }
             for (size_t i = 0; i < array_size && status != status_e::NO_ERROR; i++)
                 store(value.value[i], bits);
@@ -1127,7 +1128,7 @@ namespace serdes
         {
             if (status != status_e::NO_ERROR)
                 return {buffer, 0u, 0u};
-            const size_t max_num_bytes = buffer.size * buffer.element_size;
+            const size_t max_num_bytes           = buffer.size * buffer.element_size;
             const size_t end_byte_index_plus_one = start.value + size.value;
             if (end_byte_index_plus_one >= max_num_bytes)
             {
@@ -1148,7 +1149,7 @@ namespace serdes
         {
             if (status != status_e::NO_ERROR)
                 return {buffer, 0u, 0u};
-            const size_t max_num_bytes = bit_offset/8u;
+            const size_t max_num_bytes = bit_offset / 8u;
             if (start.value >= max_num_bytes)
             {
                 status = status_e::START_BYTE_PAST_CURRENT;
@@ -1167,7 +1168,7 @@ namespace serdes
         {
             if (status != status_e::NO_ERROR)
                 return byte_iterator(starting_byte_index{0u}, number_of_bytes{0u});
-            return byte_iterator(starting_byte_index{0u}, number_of_bytes{bit_offset/8u});
+            return byte_iterator(starting_byte_index{0u}, number_of_bytes{bit_offset / 8u});
         }
 
 #if !defined(configCPP_SERDES_LIB_EXCLUDE_CPP_CRC) && BITCPY_CONSTEXPR_SUPPORTED
@@ -1301,6 +1302,26 @@ namespace serdes
     {
         return load(std::forward<T>(value));
     }
-}
 
+    /// @brief Returns the number of bits remaining in the serdes::packet buffer
+    /// @param  pkt: packet object
+    /// @return constexpr size_t: the number of bits remaining in the buffer
+    CONSTEXPR_ABOVE_CPP11_OR_INLINE size_t remaining_bits(const packet &_pkt)
+    {
+        const size_t total_buff_bits = _pkt.buffer.size * _pkt.buffer.element_size * 8u;
+        if (total_buff_bits > _pkt.bit_offset)
+            return total_buff_bits - _pkt.bit_offset;
+        return 0u;
+    }
+
+    /// @brief Returns the number of bytes remaining in the serdes::packet buffer
+    /// @param  pkt: packet object
+    /// @return constexpr size_t: the number of bytes remaining in the buffer
+    CONSTEXPR_ABOVE_CPP11_OR_INLINE size_t remaining_bytes(const packet &_pkt)
+    {
+        return remaining_bits(_pkt) / 8u;
+    }
+} // namespace serdes
+
+// clang-format on
 #endif // _SERDES_H_

@@ -7,6 +7,7 @@
 #ifndef _BITCPY_COMMON_H_
 #define _BITCPY_COMMON_H_
 
+// clang-format off
 #include <stdint.h>
 #include <cstddef>
 #include <type_traits>
@@ -21,12 +22,18 @@
 #define BITCPY_CONSTEXPR_SUPPORTED 0
 /// @brief resolves automatically to "constexpr" if C++14 or greater
 #define CONSTEXPR_ABOVE_CPP11
+#define CONSTEXPR_ABOVE_CPP11_OR_INLINE inline
 #else
 /// @brief if == 1 constexpr for bitcpy is supported
 #define BITCPY_CONSTEXPR_SUPPORTED 1
 /// @brief resolves automatically to "constexpr" if C++14 or greater
 #define CONSTEXPR_ABOVE_CPP11 constexpr
+#define CONSTEXPR_ABOVE_CPP11_OR_INLINE constexpr
 #endif
+#endif
+
+#if defined(_MSC_VER) && !defined(__attribute__)
+#define __attribute__(x)
 #endif
 
 // use the compilation flag "-DconfigBITCPY_DISABLE_CONSTEXPR_NON_LIT" to disable this
@@ -65,17 +72,17 @@ namespace serdes
     struct info
     {
         /// @brief CppSerdes library version number
-        static constexpr float version = 1.2f;
+        static constexpr float version = 1.3f;
 
         /// @brief CppSerdes library #define major version
         #define LIB_CPP_SERDES_VERSION_MAJOR 1
 
         /// @brief CppSerdes library #define minor version
-        #define LIB_CPP_SERDES_VERSION_MINOR 2
+        #define LIB_CPP_SERDES_VERSION_MINOR 3
 
         /// @brief CppSerdes library create single version number, from two major and
         /// minor numbers, suitable for >= comparisons.
-        #define LIB_CPP_SERDES_VERSION_MAJOR_MINOR(major, minor)  (major*1000 + minor)
+        #define LIB_CPP_SERDES_VERSION_MAJOR_MINOR(major, minor) (major * 1000 + minor)
 
         /// @brief CppSerdes library single version number, suitable for >= comparisons.
         #define LIB_CPP_SERDES_VERSION LIB_CPP_SERDES_VERSION_MAJOR_MINOR(LIB_CPP_SERDES_VERSION_MAJOR, LIB_CPP_SERDES_VERSION_MINOR)
@@ -101,7 +108,7 @@ namespace serdes
         // static_assert failure message to make debugging easier
         template <typename UnsupportedType>
         constexpr bool type_is_supported() { return false; }
-    }
+    } // namespace detail
 
     struct packet;
 
@@ -112,7 +119,7 @@ namespace serdes
     {
         // used to detect if a type has a custom override (if this method is removed it means it has an override)
         // so you must not specify this method name in any custom type override.
-        void has_no_override__DO_NOT_SPECIFY_THIS(){}
+        void has_no_override__DO_NOT_SPECIFY_THIS() {}
 
         // optional default bit size needed for custom non-compointtypes, where sizeof(T)*8 won't
         // accurately determine the serialized bit size. If the default_bits setting isn't specified,
@@ -172,12 +179,20 @@ namespace serdes
         inline bool on_little_endian_platform()
 #endif
         {
+#if defined(__BYTE_ORDER__) && (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
+            return false;
+#elif defined(__BYTE_ORDER__) && (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
+            return true;
+#elif defined(_MSC_VER) && (defined(_M_AMD64) || defined(_M_IX86) || defined(_M_IA64) || defined(_M_X64))
+            return true;
+#else
             const uint16_t num = 1u;
             return *reinterpret_cast<const uint8_t *>(&num) == 1u;
+#endif
         }
 
         /// @brief same as std::remove_cvref, but compatible with C++11
-        template<class T>
+        template <class T>
         struct remove_cvref_cpp11
         {
             using type = typename std::remove_cv<typename std::remove_reference<T>::type>::type;
@@ -458,10 +473,15 @@ namespace serdes
             // faster than if-branch checking for the sign bit
             x = ((x & bitmask<T>(bits)) ^ m) - m;
         }
-        template <typename T>
+        template <typename T, typename = void>
         struct default_bitsize
         {
             static constexpr size_t value = sizeof(T) * 8u;
+        };
+        template <typename T>
+        struct default_bitsize<T, typename std::enable_if<std::is_enum<T>::value>::type>
+        {
+            static constexpr size_t value = default_bitsize<typename std::underlying_type<T>::type>::value;
         };
         template <>
         struct default_bitsize<bool>
@@ -659,5 +679,7 @@ namespace serdes
                 typename detail::unsigned_type_sizeof<sizeof(T2)>::type>(v);
         }
     } // namespace detail
-}
+} // namespace serdes
+
+// clang-format on
 #endif // _BITCPY_COMMON_H_

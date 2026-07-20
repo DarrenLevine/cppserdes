@@ -357,7 +357,7 @@ static void test_from_array_pointers()
     uintptr_t px = reinterpret_cast<uintptr_t>(&x);
     uintptr_t buffer[3] = {px, 0, 0};
     serdes::bitcpy(y, serdes::sized_pointer<uintptr_t>(buffer));
-    ASSERT_EQUALS(reinterpret_cast<uintptr_t>(y), reinterpret_cast<uintptr_t>(px));
+    ASSERT_EQUALS(reinterpret_cast<uintptr_t>(y), px);
 }
 static void test_from_array_sized_pointers()
 {

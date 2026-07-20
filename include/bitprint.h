@@ -7,6 +7,7 @@
 #ifndef _BITPRINT_H_
 #define _BITPRINT_H_
 
+// clang-format off
 #include <stdint.h>
 #include <cstddef>
 #include <stdio.h>
@@ -153,7 +154,8 @@ namespace serdes
     /// @param    add_newline: if true, a newline will be added to the end
     template <typename T = void,
               typename std::enable_if<
-                  std::is_signed<T>::value
+                  std::is_enum<T>::value
+                  || std::is_signed<T>::value
                       BITCPY_INT128_CONDITIONAL_DEFINE(|| std::is_same<T, __int128_t>::value),
                   T>::type * = nullptr>
     void printhex(const T data, const bool add_newline = true)
@@ -294,4 +296,5 @@ namespace serdes
     }
 }
 
+// clang-format on
 #endif // _BITPRINT_H_

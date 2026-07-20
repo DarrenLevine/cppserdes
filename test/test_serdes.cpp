@@ -1,3 +1,4 @@
+// clang-format off
 #include "../test/test_utilities.h"
 
 static void test_variable_arrays()
@@ -154,7 +155,37 @@ static void test_bitpacked_arrays()
     ASSERT_EQUALS(AB_flags, {1, 0, 1, 0, 1, 0, 1, 1});
     ASSERT_EQUALS(CD_flags, {1, 1, 0, 0, 1, 1, 0, 1});
 }
+static void test_enum_classes()
+{
+    enum class one_bit_enum : bool
+    {
+        OPTION_A,
+        OPTION_B
+    };
+    enum class eight_bit_enum : uint8_t
+    {
+        OPTION_NONE = 0,
+        OPTION_C = 229, // 0b11100101
+        OPTION_D = 101, // 0b01100101
+    };
+    uint32_t serial_data[10]{};
 
+    auto pkt_input = serdes::packet(serial_data);
+    pkt_input << one_bit_enum::OPTION_B;
+    ASSERT_EQUALS(pkt_input.bit_offset, 1u); // enum classes use the underlying base type for serialization
+    pkt_input << eight_bit_enum::OPTION_C;
+    ASSERT_EQUALS(pkt_input.bit_offset, 9u);
+    pkt_input << serdes::bitpack<eight_bit_enum, size_t>(eight_bit_enum::OPTION_C, 7);
+    ASSERT_EQUALS(pkt_input.bit_offset, 16u);
+
+    one_bit_enum var1{};
+    eight_bit_enum var2{};
+    eight_bit_enum var3{};
+    serdes::packet(serial_data) >> var1 >> var2 >> serdes::bitpack<eight_bit_enum, size_t>(var3, 7);
+    ASSERT_EQUALS(var1, one_bit_enum::OPTION_B);
+    ASSERT_EQUALS(var2, eight_bit_enum::OPTION_C);
+    ASSERT_EQUALS(var3, eight_bit_enum::OPTION_D);
+}
 static void test_dynamic_bitlength_captures()
 {
     struct my_info : serdes::packet_base
@@ -792,6 +823,7 @@ static void testset_serdes()
     test_variable_packet_base_arrays();
     test_fixed_sized_arrays();
     test_bitpacked_arrays();
+    test_enum_classes();
     test_dynamic_bitlength_captures();
     test_aligned_byte_arrays();
     test_inheritance_nesting();
@@ -813,4 +845,5 @@ int main()
     testset_serdes();
     PRINT_SUMMARY();
 }
+// clang-format on
 #endif

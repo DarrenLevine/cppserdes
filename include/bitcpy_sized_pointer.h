@@ -57,7 +57,7 @@ namespace serdes
         const uint_fast8_t element_size;
 
         /// @brief Construct a new sized pointer object from another sized pointer object
-        /// 
+        ///
         /// @tparam   T_array: the array's base element type
         /// @param    other: the other sized_pointer to duplicate
         template <typename T_array>
@@ -65,7 +65,7 @@ namespace serdes
             : sized_pointer(other.value, other.size) {}
 
         /// @brief Construct a new sized pointer object from a void typed sized pointer
-        /// 
+        ///
         /// @param    other: the other sized_pointer to duplicate
         sized_pointer(const sized_pointer<void> &other) noexcept
             : value{other.value},
@@ -113,7 +113,7 @@ namespace serdes
         struct is_sized_pointer<sized_pointer<T>> : std::true_type
         {
         };
-    }
-}
+    } // namespace detail
+} // namespace serdes
 
 #endif // _BITCPY_SIZED_POINTER_H_
