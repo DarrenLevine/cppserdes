@@ -12,5 +12,6 @@ var examples =
     [ "10_virtual_fields.cpp", "10_virtual_fields_8cpp-example.html", null ],
     [ "11_using_atomics_with_bitcpy.cpp", "11_using_atomics_with_bitcpy_8cpp-example.html", null ],
     [ "12_compile_time_bitcpy_evaluation.cpp", "12_compile_time_bitcpy_evaluation_8cpp-example.html", null ],
-    [ "13_arrays_of_packets.cpp", "13_arrays_of_packets_8cpp-example.html", null ]
+    [ "13_arrays_of_packets.cpp", "13_arrays_of_packets_8cpp-example.html", null ],
+    [ "14_custom_types.cpp", "14_custom_types_8cpp-example.html", null ]
 ];

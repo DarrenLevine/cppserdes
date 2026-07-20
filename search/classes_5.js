@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['packet',['packet',['../structserdes_1_1packet.html',1,'serdes']]],
-  ['packet_5fbase',['packet_base',['../structserdes_1_1packet__base.html',1,'serdes']]],
-  ['pad',['pad',['../structserdes_1_1pad.html',1,'serdes']]]
+  ['info_125',['info',['../structserdes_1_1info.html',1,'serdes']]],
+  ['iterator_126',['iterator',['../classserdes_1_1byte__iterator__type_1_1iterator.html',1,'serdes::byte_iterator_type']]]
 ];

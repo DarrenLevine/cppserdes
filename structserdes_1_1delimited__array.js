@@ -1,10 +1,13 @@
 var structserdes_1_1delimited__array =
 [
-    [ "delimited_array", "structserdes_1_1delimited__array.html#aaa15aee5bd49a8b108de2f9b0fc2ec21", null ],
-    [ "delimited_array", "structserdes_1_1delimited__array.html#acec9b84c6f8d5821c5e0d3f110960306", null ],
-    [ "delimited_array", "structserdes_1_1delimited__array.html#a03b5fd21ab454f66a4b6f3c2ab779671", null ],
-    [ "delimited_array", "structserdes_1_1delimited__array.html#af32b27589abe42c7eb9fb815d5dad304", null ],
-    [ "delimiter", "structserdes_1_1delimited__array.html#a3e4f314668ae590c1aedacd4170a114b", null ],
+    [ "elem_type", "structserdes_1_1delimited__array.html#a7e309356e7a0c209d6ddbc9310d36884", null ],
+    [ "delimited_array", "structserdes_1_1delimited__array.html#a06986a743da8a8ed29d6b456eb3d1b04", null ],
+    [ "delimited_array", "structserdes_1_1delimited__array.html#ad9eadd77a11b274b68589b7a04e83d7b", null ],
+    [ "delimited_array", "structserdes_1_1delimited__array.html#a6505e950bd1980dd3f67528561cd8504", null ],
+    [ "delimited_array", "structserdes_1_1delimited__array.html#afd75ba1ea6f342e33d3c5403dcfe89c6", null ],
+    [ "delimited_array", "structserdes_1_1delimited__array.html#ad8c74323ffb84e0df709c288de065480", null ],
+    [ "delimited_array", "structserdes_1_1delimited__array.html#acffce99d6735f6b28f2ff93ff62dfaa4", null ],
+    [ "delimiter", "structserdes_1_1delimited__array.html#a7f2ee82ab3e356a9c084e9e5ee926f45", null ],
     [ "max_size", "structserdes_1_1delimited__array.html#a9583be058b52924792bcfe31dcbe78f2", null ],
-    [ "value", "structserdes_1_1delimited__array.html#ab6cf6b6b20be8c60e570463333c0e658", null ]
+    [ "value", "structserdes_1_1delimited__array.html#a5a8d924ac5b2131baf16eb3eb0ba07e5", null ]
 ];

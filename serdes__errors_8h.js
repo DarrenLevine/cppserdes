@@ -13,7 +13,9 @@ var serdes__errors_8h =
       [ "INVALID_FIELD", "serdes__errors_8h.html#a1386add7959df5d7268423869485cd3eab0b3809be1740d3f1c8d5f4c225ed774", null ],
       [ "NO_LOAD_TO_RVALUE", "serdes__errors_8h.html#a1386add7959df5d7268423869485cd3eacce998e2340482b1544fb0e9ddd65d02", null ],
       [ "DELIMITER_NOT_FOUND", "serdes__errors_8h.html#a1386add7959df5d7268423869485cd3ea094d2eb6e3f6b6a7862b400026526a7e", null ],
-      [ "FORMATTER_NOT_SET", "serdes__errors_8h.html#a1386add7959df5d7268423869485cd3ea2d9d52b93e3296d1a982d0ac57a1a9b6", null ]
+      [ "FORMATTER_NOT_SET", "serdes__errors_8h.html#a1386add7959df5d7268423869485cd3ea2d9d52b93e3296d1a982d0ac57a1a9b6", null ],
+      [ "START_BYTE_PAST_CURRENT", "serdes__errors_8h.html#a1386add7959df5d7268423869485cd3eaaaf372b6e282a8b0ca676e6e67561420", null ],
+      [ "NUM_BYTES_OVER_MAX", "serdes__errors_8h.html#a1386add7959df5d7268423869485cd3eabd1917d66bf8c285f619d7951894ac71", null ]
     ] ],
     [ "status2str", "serdes__errors_8h.html#abb584d0e8c2555c37f71f48e362cc268", null ]
 ];

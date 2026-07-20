@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['info',['info',['../structserdes_1_1info.html',1,'serdes']]]
+  ['formatter_124',['formatter',['../structserdes_1_1formatter.html',1,'serdes']]]
 ];

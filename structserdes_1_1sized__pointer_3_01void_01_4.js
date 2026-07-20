@@ -1,5 +1,7 @@
 var structserdes_1_1sized__pointer_3_01void_01_4 =
 [
+    [ "sized_pointer", "structserdes_1_1sized__pointer_3_01void_01_4.html#ad7e87231430550c79b4fa2e25348430f", null ],
+    [ "sized_pointer", "structserdes_1_1sized__pointer_3_01void_01_4.html#a2e923098cd7e506ea90228562b29ef95", null ],
     [ "sized_pointer", "structserdes_1_1sized__pointer_3_01void_01_4.html#a0f5265727141259e35583f3d067b146c", null ],
     [ "sized_pointer", "structserdes_1_1sized__pointer_3_01void_01_4.html#ab6468aed9c6df2bb26f376d10f763990", null ],
     [ "bit_capacity", "structserdes_1_1sized__pointer_3_01void_01_4.html#a76d57750fa70a0d5cb0ad278d1ce1e92", null ],

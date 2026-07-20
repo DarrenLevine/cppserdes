@@ -1,9 +1,9 @@
 var structserdes_1_1bitpack =
 [
-    [ "bitpack", "structserdes_1_1bitpack.html#a23f38d0ea9c41bf43bf7b9c351c7f013", null ],
-    [ "bitpack", "structserdes_1_1bitpack.html#a9dae66225b65c5240686f5d4c74cb4fc", null ],
-    [ "bitpack", "structserdes_1_1bitpack.html#ace205ac6b73f5cecce11aa0741636744", null ],
-    [ "bitpack", "structserdes_1_1bitpack.html#a436e576b007cf6df590ab6b40e33612c", null ],
+    [ "bitpack", "structserdes_1_1bitpack.html#a6eddc2a690aad568f19bff7807de4875", null ],
+    [ "bitpack", "structserdes_1_1bitpack.html#a523b5166bc61769e715152a41a89c90a", null ],
+    [ "bitpack", "structserdes_1_1bitpack.html#ad759627e27e65b9f9e672935134489ec", null ],
+    [ "bitpack", "structserdes_1_1bitpack.html#a10038d9471b93003bfbecb0b68bb5d24", null ],
     [ "bits", "structserdes_1_1bitpack.html#ac844f296d35e939c70f3735e8d2446fe", null ],
     [ "value", "structserdes_1_1bitpack.html#a41a475c719d286d4392a7d160e90fc2a", null ]
 ];

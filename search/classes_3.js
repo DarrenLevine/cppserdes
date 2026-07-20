@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['formatter',['formatter',['../structserdes_1_1formatter.html',1,'serdes']]]
+  ['delimited_5farray_123',['delimited_array',['../structserdes_1_1delimited__array.html',1,'serdes']]]
 ];
